@@ -1,0 +1,47 @@
+name: 'Extract Version'
+description: 'Extract version from commit messages or branch names'
+author: 'hope0hermes'
+
+branding:
+  icon: 'tag'
+  color: 'purple'
+
+outputs:
+  is_version_bump:
+    description: 'Whether this is a version bump commit (true/false)'
+    value: ${{ steps.extract.outputs.is_version_bump }}
+  
+  version:
+    description: 'Extracted version number'
+    value: ${{ steps.extract.outputs.version }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Extract version
+      id: extract
+      shell: bash
+      run: |
+        COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+        echo "Commit message: $COMMIT_MSG"
+        
+        # Check if this is a merge from a release branch
+        if echo "$COMMIT_MSG" | grep -qE "Merge pull request #[0-9]+ from .*/release/v"; then
+          echo "Detected release branch merge"
+          # Extract version from branch name in merge commit
+          VERSION=$(echo "$COMMIT_MSG" | sed -n 's/.*\/release\/v\([0-9.]*\).*/\1/p')
+          echo "is_version_bump=true" >> $GITHUB_OUTPUT
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "✓ This is a version bump to $VERSION"
+        # Check if the commit message itself is a version bump
+        elif echo "$COMMIT_MSG" | grep -qiE "^chore: bump version to"; then
+          echo "is_version_bump=true" >> $GITHUB_OUTPUT
+          # Extract version number (handles optional PR number like (#22))
+          VERSION=$(echo "$COMMIT_MSG" | sed -n 's/^[Cc]hore: bump version to \([0-9.]*\).*/\1/p')
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "✓ This is a version bump to $VERSION"
+        else
+          echo "is_version_bump=false" >> $GITHUB_OUTPUT
+          echo "version=" >> $GITHUB_OUTPUT
+          echo "✓ Not a version bump commit"
+        fi

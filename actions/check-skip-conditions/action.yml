@@ -1,0 +1,40 @@
+name: 'Check Skip Conditions'
+description: 'Determine if workflow should skip based on commit message'
+author: 'hope0hermes'
+
+branding:
+  icon: 'skip-forward'
+  color: 'gray'
+
+outputs:
+  should_skip:
+    description: 'Whether to skip the workflow (true/false)'
+    value: ${{ steps.check.outputs.should_skip }}
+  
+  reason:
+    description: 'Reason for skipping'
+    value: ${{ steps.check.outputs.reason }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Check conditions
+      id: check
+      shell: bash
+      run: |
+        COMMIT_MSG=$(git log -1 --pretty=format:"%s")
+        echo "Last commit: $COMMIT_MSG"
+        
+        # Skip if:
+        # 1. Commit contains [skip ci]
+        # 2. Commit message starts with "chore: bump version"
+        # 3. Commit is a merge from a release/ branch (version bump PR merge)
+        if echo "$COMMIT_MSG" | grep -qE "\[skip ci\]|^chore: bump version|^Merge pull request .* from .*/release/"; then
+          echo "should_skip=true" >> $GITHUB_OUTPUT
+          echo "reason=Version bump or [skip ci] commit" >> $GITHUB_OUTPUT
+          echo "✓ Skipping workflow (version bump or [skip ci] commit)"
+        else
+          echo "should_skip=false" >> $GITHUB_OUTPUT
+          echo "reason=Normal commit" >> $GITHUB_OUTPUT
+          echo "✓ Proceeding with workflow"
+        fi

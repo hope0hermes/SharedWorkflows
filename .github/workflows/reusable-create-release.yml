@@ -1,0 +1,41 @@
+# Reusable Create Release Workflow
+#
+# This workflow automatically creates a GitHub Release after a version bump PR is merged.
+#
+# Usage:
+#   jobs:
+#     create-release:
+#       uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-create-release.yml@main
+#       secrets:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+name: Reusable Create Release
+
+on:
+  workflow_call:
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  create-release:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Extract version from commit
+        id: extract
+        uses: hope0hermes/SharedWorkflows/actions/extract-version@main
+      
+      - name: Create GitHub Release
+        if: steps.extract.outputs.is_version_bump == 'true'
+        uses: hope0hermes/SharedWorkflows/actions/create-github-release@main
+        with:
+          version: ${{ steps.extract.outputs.version }}
+          github-token: ${{ secrets.GITHUB_TOKEN }}

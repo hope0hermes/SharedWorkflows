@@ -1,0 +1,50 @@
+name: 'Bump Version'
+description: 'Bump version using hatch'
+author: 'hope0hermes'
+
+branding:
+  icon: 'arrow-up'
+  color: 'green'
+
+inputs:
+  bump-type:
+    description: 'Type of bump (major/minor/patch)'
+    required: true
+
+outputs:
+  old_version:
+    description: 'Version before bump'
+    value: ${{ steps.bump.outputs.old_version }}
+  
+  new_version:
+    description: 'Version after bump'
+    value: ${{ steps.bump.outputs.new_version }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: "3.12"
+    
+    - name: Install hatch
+      shell: bash
+      run: pip install hatch
+    
+    - name: Bump version
+      id: bump
+      shell: bash
+      run: |
+        # Get current version
+        OLD_VERSION=$(hatch version)
+        echo "Current version: $OLD_VERSION"
+        
+        # Bump version using hatch (automatically updates __init__.py)
+        hatch version ${{ inputs.bump-type }}
+        
+        # Get new version and save to outputs
+        NEW_VERSION=$(hatch version)
+        echo "old_version=$OLD_VERSION" >> $GITHUB_OUTPUT
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        echo "✓ Bumped version from $OLD_VERSION to $NEW_VERSION"

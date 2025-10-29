@@ -1,0 +1,66 @@
+name: 'Create Version Bump PR'
+description: 'Create PR with version bump changes'
+author: 'hope0hermes'
+
+branding:
+  icon: 'git-pull-request'
+  color: 'blue'
+
+inputs:
+  version:
+    description: 'New version number'
+    required: true
+  
+  package-path:
+    description: 'Path to package __init__.py (e.g., src/strava_analyzer/__init__.py)'
+    required: true
+  
+  github-token:
+    description: 'GitHub token for creating PR (PAT_TOKEN recommended)'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create PR
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.github-token }}
+      run: |
+        BRANCH_NAME="release/v${{ inputs.version }}"
+        
+        echo "Creating version bump PR for v${{ inputs.version }}"
+        
+        # Configure git
+        git config user.name "github-actions[bot]"
+        git config user.email "github-actions[bot]@users.noreply.github.com"
+        
+        # Create and checkout new branch
+        git checkout -b "$BRANCH_NAME"
+        
+        # Commit changes
+        git add ${{ inputs.package-path }} CHANGELOG.md
+        git commit -m "chore: bump version to ${{ inputs.version }}"
+        
+        # Push branch
+        git push origin "$BRANCH_NAME"
+        
+        # Create PR body
+        PR_BODY="Automated version bump to ${{ inputs.version }}
+
+This PR was automatically created by the release workflow.
+
+**Changes:**
+- Updated version in ${{ inputs.package-path }}
+- Updated CHANGELOG.md with release notes
+
+**Note:** After merging this PR, the GitHub Release will be automatically created by the create-release workflow."
+        
+        # Create PR using gh CLI
+        gh pr create \
+          --title "chore: bump version to ${{ inputs.version }}" \
+          --body "$PR_BODY" \
+          --base main \
+          --head "$BRANCH_NAME"
+        
+        echo "✓ Created PR for version bump to ${{ inputs.version }}"

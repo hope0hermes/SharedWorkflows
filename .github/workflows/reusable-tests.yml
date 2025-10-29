@@ -1,0 +1,98 @@
+# Reusable Tests Workflow
+#
+# This workflow provides a complete testing pipeline for Python projects.
+# It runs linting and tests with coverage reporting.
+#
+# Usage:
+#   jobs:
+#     test:
+#       uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-tests.yml@main
+#       with:
+#         python-version: "3.12"
+#         package-name: "my_package"
+#         coverage-threshold: 80
+#       secrets:
+#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+name: Reusable Tests
+
+on:
+  workflow_call:
+    inputs:
+      python-version:
+        description: 'Python version to use'
+        required: false
+        type: string
+        default: '3.12'
+      
+      package-name:
+        description: 'Name of the package (for display purposes)'
+        required: true
+        type: string
+      
+      coverage-threshold:
+        description: 'Minimum coverage percentage (0-100, 0 = no check)'
+        required: false
+        type: number
+        default: 0
+      
+      run-lint:
+        description: 'Whether to run linting'
+        required: false
+        type: boolean
+        default: true
+      
+      run-tests:
+        description: 'Whether to run tests'
+        required: false
+        type: boolean
+        default: true
+      
+      working-directory:
+        description: 'Directory containing the Python project'
+        required: false
+        type: string
+        default: '.'
+    
+    secrets:
+      GITHUB_TOKEN:
+        required: true
+
+jobs:
+  lint:
+    if: inputs.run-lint
+    runs-on: ubuntu-latest
+    name: Lint ${{ inputs.package-name }}
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Python linting
+        uses: hope0hermes/SharedWorkflows/actions/python-lint@main
+        with:
+          python-version: ${{ inputs.python-version }}
+          working-directory: ${{ inputs.working-directory }}
+
+  test:
+    if: inputs.run-tests && !contains(github.event.head_commit.message, 'release/v')
+    runs-on: ubuntu-latest
+    name: Test ${{ inputs.package-name }}
+    needs: lint
+    
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Run Python tests
+        uses: hope0hermes/SharedWorkflows/actions/python-test@main
+        with:
+          python-version: ${{ inputs.python-version }}
+          working-directory: ${{ inputs.working-directory }}
+          coverage-threshold: ${{ inputs.coverage-threshold }}
+          upload-coverage: 'true'
+
+# Concurrency control:
+# - If you push multiple commits quickly to the same PR, old test runs are cancelled
+# - Saves CI resources by not running outdated code
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true

@@ -1,0 +1,66 @@
+name: 'Python CI (Lint + Test)'
+description: 'Complete Python CI: linting and testing'
+author: 'hope0hermes'
+
+branding:
+  icon: 'zap'
+  color: 'purple'
+
+inputs:
+  python-version:
+    description: 'Python version to use'
+    required: false
+    default: '3.12'
+  
+  working-directory:
+    description: 'Directory containing the Python project'
+    required: false
+    default: '.'
+  
+  run-lint:
+    description: 'Whether to run linting'
+    required: false
+    default: 'true'
+  
+  run-tests:
+    description: 'Whether to run tests'
+    required: false
+    default: 'true'
+  
+  coverage-threshold:
+    description: 'Minimum coverage percentage'
+    required: false
+    default: '0'
+
+outputs:
+  lint-status:
+    description: 'Linting status'
+    value: ${{ steps.lint.outputs.status }}
+  
+  test-status:
+    description: 'Test status'
+    value: ${{ steps.test.outputs.status }}
+  
+  coverage:
+    description: 'Test coverage percentage'
+    value: ${{ steps.test.outputs.coverage }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Run linting
+      id: lint
+      if: inputs.run-lint == 'true'
+      uses: hope0hermes/SharedWorkflows/actions/python-lint@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        working-directory: ${{ inputs.working-directory }}
+
+    - name: Run tests
+      id: test
+      if: inputs.run-tests == 'true'
+      uses: hope0hermes/SharedWorkflows/actions/python-test@main
+      with:
+        python-version: ${{ inputs.python-version }}
+        working-directory: ${{ inputs.working-directory }}
+        coverage-threshold: ${{ inputs.coverage-threshold }}

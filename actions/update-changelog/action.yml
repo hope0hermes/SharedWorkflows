@@ -1,0 +1,48 @@
+name: 'Update Changelog'
+description: 'Update CHANGELOG.md with new version'
+author: 'hope0hermes'
+
+branding:
+  icon: 'file-text'
+  color: 'yellow'
+
+inputs:
+  version:
+    description: 'New version number'
+    required: true
+  
+  commits:
+    description: 'Commits to include in changelog'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Update CHANGELOG.md
+      shell: bash
+      run: |
+        DATE=$(date +%Y-%m-%d)
+        
+        echo "Updating CHANGELOG.md for version ${{ inputs.version }}"
+        
+        # Get commits since last tag for changelog (excluding merge commits)
+        COMMITS="${{ inputs.commits }}"
+        
+        # Create changelog entry
+        CHANGELOG_ENTRY=$(echo "$COMMITS" | grep -v "^Merge" | sed 's/^/- /' || echo "- No notable changes")
+        
+        # Insert new version section after [Unreleased] header
+        # Use a temporary file to build the new changelog
+        {
+          sed -n '1,/^## \[Unreleased\]/p' CHANGELOG.md
+          echo ""
+          echo "## [${{ inputs.version }}] - $DATE"
+          echo ""
+          echo "### Changed"
+          echo "$CHANGELOG_ENTRY"
+          echo ""
+          sed -n '/^## \[Unreleased\]/,$p' CHANGELOG.md | tail -n +2
+        } > CHANGELOG.md.tmp
+        
+        mv CHANGELOG.md.tmp CHANGELOG.md
+        echo "✓ Updated CHANGELOG.md"

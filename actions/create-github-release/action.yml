@@ -1,0 +1,57 @@
+name: 'Create GitHub Release'
+description: 'Create GitHub Release with tag'
+author: 'hope0hermes'
+
+branding:
+  icon: 'package'
+  color: 'green'
+
+inputs:
+  version:
+    description: 'Version number (without v prefix)'
+    required: true
+  
+  github-token:
+    description: 'GitHub token for creating release'
+    required: true
+
+runs:
+  using: "composite"
+  steps:
+    - name: Create release
+      shell: bash
+      env:
+        GH_TOKEN: ${{ inputs.github-token }}
+      run: |
+        VERSION="${{ inputs.version }}"
+        
+        echo "Creating release for version: $VERSION"
+        
+        # Extract release notes from CHANGELOG.md for this version
+        RELEASE_NOTES=$(sed -n "/^## \[$VERSION\]/,/^## \[/p" CHANGELOG.md | sed '$d' | tail -n +2 || echo "No release notes found")
+        
+        echo "Release notes:"
+        echo "$RELEASE_NOTES"
+        
+        # Check if release already exists
+        if gh release view "v$VERSION" 2>/dev/null; then
+          echo "✓ Release v$VERSION already exists, skipping"
+          exit 0
+        fi
+        
+        echo "Release does not exist, creating..."
+        
+        # Create release (this will also create the tag if it doesn't exist)
+        if gh release create "v$VERSION" \
+          --target main \
+          --title "Release v$VERSION" \
+          --notes "$RELEASE_NOTES"; then
+          echo "✓ Successfully created release v$VERSION with tag"
+        else
+          echo "✗ Failed to create release v$VERSION"
+          exit 1
+        fi
+        
+        # Verify the release was created
+        echo "Verifying release..."
+        gh release view "v$VERSION"
