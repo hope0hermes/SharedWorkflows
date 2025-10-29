@@ -5,7 +5,7 @@
 # Usage:
 #   jobs:
 #     commitlint:
-#       uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-commitlint.yml@main
+#       uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-commitlint.yml
 
 name: Reusable Commit Linting
 

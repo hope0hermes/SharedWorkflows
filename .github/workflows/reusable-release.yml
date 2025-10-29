@@ -6,7 +6,7 @@
 # Usage:
 #   jobs:
 #     release:
-#       uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-release.yml@main
+#       uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-release.yml
 #       with:
 #         package-path: "src/my_package/__init__.py"
 #       secrets:
@@ -42,30 +42,30 @@ jobs:
       
       - name: Check skip conditions
         id: skip_check
-        uses: hope0hermes/SharedWorkflows/actions/check-skip-conditions@main
+        uses: ./actions/check-skip-conditions
       
       - name: Determine version bump type
         if: steps.skip_check.outputs.should_skip != 'true'
         id: bump_type
-        uses: hope0hermes/SharedWorkflows/actions/determine-version-bump@main
+        uses: ./actions/determine-version-bump
       
       - name: Bump version
         if: steps.skip_check.outputs.should_skip != 'true' && steps.bump_type.outputs.bump_type != 'none'
         id: version
-        uses: hope0hermes/SharedWorkflows/actions/bump-version@main
+        uses: ./actions/bump-version
         with:
           bump-type: ${{ steps.bump_type.outputs.bump_type }}
       
       - name: Update changelog
         if: steps.skip_check.outputs.should_skip != 'true' && steps.bump_type.outputs.bump_type != 'none'
-        uses: hope0hermes/SharedWorkflows/actions/update-changelog@main
+        uses: ./actions/update-changelog
         with:
           version: ${{ steps.version.outputs.new_version }}
           commits: ${{ steps.bump_type.outputs.commits }}
       
       - name: Create version bump PR
         if: steps.skip_check.outputs.should_skip != 'true' && steps.bump_type.outputs.bump_type != 'none'
-        uses: hope0hermes/SharedWorkflows/actions/create-version-pr@main
+        uses: ./actions/create-version-pr
         with:
           version: ${{ steps.version.outputs.new_version }}
           package-path: ${{ inputs.package-path }}
