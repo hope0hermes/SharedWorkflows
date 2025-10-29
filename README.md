@@ -25,8 +25,6 @@ jobs:
       python-version: "3.12"
       package-name: "my_package"
       coverage-threshold: 80
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 **`.github/workflows/commitlint.yml`**
@@ -70,8 +68,6 @@ on:
 jobs:
   create-release:
     uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-create-release.yml@main
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 **Result**: Complete CI/CD automation in ~40 lines total! 🎉
@@ -123,8 +119,7 @@ jobs:
 
 - [Usage Guide](docs/USAGE.md) - Detailed usage examples
 - [Migration Guide](docs/MIGRATION.md) - Migrate existing projects
-- [Actions Reference](docs/ACTIONS.md) - Individual action documentation
-- [Examples](docs/EXAMPLES.md) - Real-world usage patterns
+- [Testing Guide](TESTING.md) - How to test the workflows
 
 ---
 

@@ -51,8 +51,6 @@ jobs:
     uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-tests.yml@main
     with:
       package-name: "my_package"
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 **Full Options:**
@@ -67,8 +65,7 @@ jobs:
       run-lint: true                    # Run linting
       run-tests: true                   # Run tests
       working-directory: "."            # Project directory
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      pytest-args: ""                   # Additional pytest arguments (e.g., "tests/test_specific.py")
 ```
 
 **Features:**
@@ -77,6 +74,7 @@ jobs:
 - Skips tests on version bump merges
 - Uploads coverage artifacts
 - Cancels outdated runs
+- Supports selective test execution via pytest-args
 
 ---
 
@@ -149,8 +147,6 @@ Creates GitHub releases after version bump PRs are merged.
 jobs:
   create-release:
     uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-create-release.yml@main
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 **What It Does:**
@@ -182,6 +178,7 @@ For more control, use individual actions in your custom workflows.
     python-version: "3.12"
     coverage-threshold: 80
     upload-coverage: true
+    pytest-args: "tests/test_specific.py -v"  # Optional: run specific tests
 ```
 
 ### python-ci
@@ -195,7 +192,7 @@ For more control, use individual actions in your custom workflows.
     coverage-threshold: 80
 ```
 
-See [ACTIONS.md](ACTIONS.md) for complete action documentation.
+See individual action files in the `actions/` directory for complete action documentation.
 
 ---
 
@@ -234,18 +231,28 @@ with:
   run-lint: true
 ```
 
+### Selective Test Execution
+
+Run only specific tests:
+```yaml
+with:
+  pytest-args: "tests/test_integration.py -v -k test_specific"
+```
+
 ---
 
 ## Secrets
 
 ### GITHUB_TOKEN
 
-Automatically provided by GitHub. Use for:
-- Reading repository
-- Creating releases
+Automatically provided by GitHub Actions. No configuration needed!
+
+**Used for:**
+- Reading repository content
+- Creating releases (via reusable-create-release.yml)
 - Uploading artifacts
 
-**No configuration needed!**
+**Note:** The `reusable-tests.yml` and `reusable-create-release.yml` workflows use `GITHUB_TOKEN` automatically - you don't need to pass it explicitly.
 
 ### PAT_TOKEN
 
@@ -292,10 +299,10 @@ Check:
 
 ---
 
+---
+
 ## Advanced Usage
 
-See [EXAMPLES.md](EXAMPLES.md) for advanced patterns like:
-- Matrix testing
-- Parallel execution
-- Custom workflows
-- Monorepo support
+For advanced patterns like matrix testing, parallel execution, custom workflows, and monorepo support, check the examples in the repository or refer to the GitHub Actions documentation.
+
+````
