@@ -11,22 +11,22 @@ inputs:
     description: 'Python version to use'
     required: false
     default: '3.12'
-  
+
   working-directory:
     description: 'Directory containing the Python project'
     required: false
     default: '.'
-  
+
   coverage-threshold:
     description: 'Minimum coverage percentage (0-100, 0 = no check)'
     required: false
     default: '0'
-  
+
   upload-coverage:
     description: 'Whether to upload coverage artifacts'
     required: false
     default: 'true'
-  
+
   pytest-args:
     description: 'Additional arguments to pass to pytest (e.g., specific test files)'
     required: false
@@ -36,7 +36,7 @@ outputs:
   status:
     description: 'Overall test status (passed/failed)'
     value: ${{ steps.test.outputs.status }}
-  
+
   coverage:
     description: 'Test coverage percentage'
     value: ${{ steps.test.outputs.coverage }}
@@ -62,13 +62,13 @@ runs:
       shell: bash
       run: |
         echo "Running Python tests..."
-        
+
         # Build pytest command with optional args
         PYTEST_CMD="hatch run test:cov"
         if [ -n "${{ inputs.pytest-args }}" ]; then
           PYTEST_CMD="hatch run test:cov ${{ inputs.pytest-args }}"
         fi
-        
+
         # Run tests with coverage
         if eval "$PYTEST_CMD"; then
           echo "status=passed" >> $GITHUB_OUTPUT
@@ -78,13 +78,13 @@ runs:
           echo "✗ Tests failed"
           exit 1
         fi
-        
+
         # Extract coverage percentage if coverage.xml exists
         if [ -f coverage.xml ]; then
           COVERAGE=$(python -c "import xml.etree.ElementTree as ET; tree = ET.parse('coverage.xml'); print(int(float(tree.getroot().attrib.get('line-rate', 0)) * 100))" 2>/dev/null || echo "0")
           echo "coverage=$COVERAGE" >> $GITHUB_OUTPUT
           echo "Coverage: $COVERAGE%"
-          
+
           # Check threshold if set
           if [ "${{ inputs.coverage-threshold }}" -gt 0 ]; then
             if [ "$COVERAGE" -lt "${{ inputs.coverage-threshold }}" ]; then
