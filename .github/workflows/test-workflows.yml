@@ -22,9 +22,9 @@ jobs:
     uses: ./.github/workflows/reusable-tests.yml
     with:
       python-version: "3.12"
+      package-name: "test-project"
       working-directory: test-fixtures/python-project
       coverage-threshold: 50
-      upload-coverage: false
 
   # Test 2: Reusable Commitlint Workflow
   test-reusable-commitlint:
