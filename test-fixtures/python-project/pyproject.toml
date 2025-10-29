@@ -87,6 +87,9 @@ target-version = "py312"
 select = ["E", "F", "W", "I", "N", "D", "UP", "S", "B", "A", "C4", "T20", "RET", "SIM", "ARG"]
 ignore = ["D203", "D213"]
 
+[tool.ruff.lint.per-file-ignores]
+"tests/*" = ["S101", "D404"]  # Allow assert in tests, allow "This" in docstrings
+
 [tool.mypy]
 python_version = "3.12"
 warn_return_any = true

@@ -10,7 +10,7 @@ inputs:
   bump-type:
     description: 'Type of bump (major/minor/patch)'
     required: true
-  
+
   working-directory:
     description: 'Directory containing the Python project'
     required: false
@@ -20,7 +20,7 @@ outputs:
   old_version:
     description: 'Version before bump'
     value: ${{ steps.bump.outputs.old_version }}
-  
+
   new_version:
     description: 'Version after bump'
     value: ${{ steps.bump.outputs.new_version }}
@@ -32,11 +32,11 @@ runs:
       uses: actions/setup-python@v5
       with:
         python-version: "3.12"
-    
+
     - name: Install hatch
       shell: bash
       run: pip install hatch
-    
+
     - name: Bump version
       id: bump
       shell: bash
@@ -45,10 +45,10 @@ runs:
         # Get current version
         OLD_VERSION=$(hatch version)
         echo "Current version: $OLD_VERSION"
-        
+
         # Bump version using hatch (automatically updates __init__.py)
         hatch version ${{ inputs.bump-type }}
-        
+
         # Get new version and save to outputs
         NEW_VERSION=$(hatch version)
         echo "old_version=$OLD_VERSION" >> $GITHUB_OUTPUT

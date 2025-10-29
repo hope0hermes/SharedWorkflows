@@ -1,6 +1,6 @@
 """Tests that pass."""
 
-from test_project.good_code import calculate_sum, greet, Calculator
+from test_project.good_code import Calculator, calculate_sum, greet
 
 
 def test_calculate_sum() -> None:

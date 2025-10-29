@@ -10,11 +10,11 @@ inputs:
   version:
     description: 'New version number'
     required: true
-  
+
   commits:
     description: 'Commits to include in changelog'
     required: true
-  
+
   working-directory:
     description: 'Directory containing the CHANGELOG.md file'
     required: false
@@ -28,15 +28,15 @@ runs:
       working-directory: ${{ inputs.working-directory }}
       run: |
         DATE=$(date +%Y-%m-%d)
-        
+
         echo "Updating CHANGELOG.md for version ${{ inputs.version }}"
-        
+
         # Get commits since last tag for changelog (excluding merge commits)
         COMMITS="${{ inputs.commits }}"
-        
+
         # Create changelog entry
         CHANGELOG_ENTRY=$(echo "$COMMITS" | grep -v "^Merge" | sed 's/^/- /' || echo "- No notable changes")
-        
+
         # Insert new version section after [Unreleased] header
         # Use a temporary file to build the new changelog
         {
@@ -49,6 +49,6 @@ runs:
           echo ""
           sed -n '/^## \[Unreleased\]/,$p' CHANGELOG.md | tail -n +2
         } > CHANGELOG.md.tmp
-        
+
         mv CHANGELOG.md.tmp CHANGELOG.md
         echo "✓ Updated CHANGELOG.md"
