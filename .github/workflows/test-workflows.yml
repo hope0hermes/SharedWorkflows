@@ -25,6 +25,7 @@ jobs:
       package-name: "test-project"
       working-directory: test-fixtures/python-project
       coverage-threshold: 50
+      pytest-args: "tests/test_good_code.py"
 
   # Test 2: Reusable Commitlint Workflow
   test-reusable-commitlint:

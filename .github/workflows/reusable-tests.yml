@@ -52,6 +52,12 @@ on:
         type: string
         default: '.'
 
+      pytest-args:
+        description: 'Additional arguments to pass to pytest (e.g., specific test files)'
+        required: false
+        type: string
+        default: ''
+
 jobs:
   lint:
     if: inputs.run-lint
@@ -83,6 +89,7 @@ jobs:
           working-directory: ${{ inputs.working-directory }}
           coverage-threshold: ${{ inputs.coverage-threshold }}
           upload-coverage: 'true'
+          pytest-args: ${{ inputs.pytest-args }}
 
 # Concurrency control:
 # - If you push multiple commits quickly to the same PR, old test runs are cancelled
