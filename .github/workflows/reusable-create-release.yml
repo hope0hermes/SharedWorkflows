@@ -6,16 +6,11 @@
 #   jobs:
 #     create-release:
 #       uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-create-release.yml@main
-#       secrets:
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 name: Reusable Create Release
 
 on:
   workflow_call:
-    secrets:
-      GITHUB_TOKEN:
-        required: true
 
 jobs:
   create-release:
@@ -27,7 +22,6 @@ jobs:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-          token: ${{ secrets.GITHUB_TOKEN }}
       
       - name: Extract version from commit
         id: extract

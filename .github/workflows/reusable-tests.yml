@@ -11,8 +11,6 @@
 #         python-version: "3.12"
 #         package-name: "my_package"
 #         coverage-threshold: 80
-#       secrets:
-#         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 name: Reusable Tests
 
@@ -53,10 +51,6 @@ on:
         required: false
         type: string
         default: '.'
-    
-    secrets:
-      GITHUB_TOKEN:
-        required: true
 
 jobs:
   lint:
