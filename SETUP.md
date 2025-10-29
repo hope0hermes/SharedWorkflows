@@ -14,7 +14,9 @@ SharedWorkflows/
 │   ├── reusable-tests.yml
 │   ├── reusable-commitlint.yml
 │   ├── reusable-release.yml
-│   └── reusable-create-release.yml
+│   ├── reusable-create-release.yml
+│   ├── test-actions.yml        # Action tests
+│   └── test-workflows.yml      # Workflow tests
 ├── actions/                    # Composite actions
 │   ├── python-lint/
 │   ├── python-test/
@@ -29,7 +31,14 @@ SharedWorkflows/
 ├── docs/                       # Documentation
 │   ├── USAGE.md
 │   └── MIGRATION.md
+├── scripts/                    # Utility scripts
+│   └── version.sh             # Version management
+├── test-fixtures/              # Test projects
+│   └── python-project/
+├── CHANGELOG.md               # Version history
+├── VERSION                    # Current version
 ├── README.md
+├── TESTING.md
 ├── LICENSE
 └── .gitignore
 ```
@@ -204,6 +213,78 @@ Check:
 ✅ Tests pass, releases created
 
 ## Maintenance
+
+### Version Management
+
+SharedWorkflows uses semantic versioning and maintains version history in:
+- `VERSION` - Current version number
+- `CHANGELOG.md` - Detailed change history
+- Git tags - Release tags (v1.0.0, v1.1.0, etc.)
+
+#### Check Current Version
+
+```bash
+./scripts/version.sh current
+# or
+cat VERSION
+```
+
+#### Bump Version
+
+```bash
+# Update version to 1.1.0
+./scripts/version.sh bump 1.1.0
+
+# This will:
+# - Update VERSION file
+# - Update README badge
+# - Update CHANGELOG.md
+# - Move [Unreleased] changes to new version section
+```
+
+#### Create Release
+
+```bash
+# 1. Bump version (if not already done)
+./scripts/version.sh bump 1.1.0
+
+# 2. Review changes
+git diff
+
+# 3. Commit version bump
+git add VERSION CHANGELOG.md README.md
+git commit -m "chore: bump version to 1.1.0"
+
+# 4. Create and push tag
+./scripts/version.sh tag
+git push origin main
+git push origin v1.1.0
+
+# 5. Create GitHub Release
+# Go to: https://github.com/hope0hermes/SharedWorkflows/releases/new
+# Select tag: v1.1.0
+# Copy changes from CHANGELOG.md
+```
+
+#### Changelog Format
+
+Follow [Keep a Changelog](https://keepachangelog.com/) format:
+
+```markdown
+## [Unreleased]
+
+### Added
+- New feature descriptions
+
+### Changed
+- Changes to existing functionality
+
+### Fixed
+- Bug fixes
+
+### Removed
+- Removed features
+```
 
 ### Adding New Actions
 
