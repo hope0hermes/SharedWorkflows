@@ -82,6 +82,7 @@ skip_covered = false
 [tool.ruff]
 line-length = 80
 target-version = "py312"
+extend-exclude = ["src/test_project/bad_code.py"]  # Exclude intentionally bad code
 
 [tool.ruff.lint]
 select = ["E", "F", "W", "I", "N", "D", "UP", "S", "B", "A", "C4", "T20", "RET", "SIM", "ARG"]
