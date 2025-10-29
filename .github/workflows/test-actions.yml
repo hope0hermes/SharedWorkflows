@@ -101,10 +101,8 @@ jobs:
           python-version: "3.12"
           coverage-threshold: 50
           upload-coverage: true
+          pytest-args: "tests/test_good_code.py"
         continue-on-error: true
-        env:
-          # Run only passing tests
-          PYTEST_ARGS: "tests/test_good_code.py"
 
       - name: Verify passing tests
         run: |

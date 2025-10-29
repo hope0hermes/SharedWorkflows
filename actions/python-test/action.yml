@@ -26,6 +26,11 @@ inputs:
     description: 'Whether to upload coverage artifacts'
     required: false
     default: 'true'
+  
+  pytest-args:
+    description: 'Additional arguments to pass to pytest (e.g., specific test files)'
+    required: false
+    default: ''
 
 outputs:
   status:
@@ -58,8 +63,14 @@ runs:
       run: |
         echo "Running Python tests..."
         
+        # Build pytest command with optional args
+        PYTEST_CMD="hatch run test:cov"
+        if [ -n "${{ inputs.pytest-args }}" ]; then
+          PYTEST_CMD="hatch run test:cov ${{ inputs.pytest-args }}"
+        fi
+        
         # Run tests with coverage
-        if hatch run test:cov; then
+        if eval "$PYTEST_CMD"; then
           echo "status=passed" >> $GITHUB_OUTPUT
           echo "✓ All tests passed"
         else
