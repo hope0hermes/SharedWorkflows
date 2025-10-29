@@ -22,30 +22,30 @@ on:
         required: false
         type: string
         default: '3.12'
-      
+
       package-name:
         description: 'Name of the package (for display purposes)'
         required: true
         type: string
-      
+
       coverage-threshold:
         description: 'Minimum coverage percentage (0-100, 0 = no check)'
         required: false
         type: number
         default: 0
-      
+
       run-lint:
         description: 'Whether to run linting'
         required: false
         type: boolean
         default: true
-      
+
       run-tests:
         description: 'Whether to run tests'
         required: false
         type: boolean
         default: true
-      
+
       working-directory:
         description: 'Directory containing the Python project'
         required: false
@@ -57,10 +57,10 @@ jobs:
     if: inputs.run-lint
     runs-on: ubuntu-latest
     name: Lint ${{ inputs.package-name }}
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Run Python linting
         uses: hope0hermes/SharedWorkflows/actions/python-lint@main
         with:
@@ -72,10 +72,10 @@ jobs:
     runs-on: ubuntu-latest
     name: Test ${{ inputs.package-name }}
     needs: lint
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Run Python tests
         uses: hope0hermes/SharedWorkflows/actions/python-test@main
         with:

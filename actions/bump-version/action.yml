@@ -10,6 +10,11 @@ inputs:
   bump-type:
     description: 'Type of bump (major/minor/patch)'
     required: true
+  
+  working-directory:
+    description: 'Directory containing the Python project'
+    required: false
+    default: '.'
 
 outputs:
   old_version:
@@ -35,6 +40,7 @@ runs:
     - name: Bump version
       id: bump
       shell: bash
+      working-directory: ${{ inputs.working-directory }}
       run: |
         # Get current version
         OLD_VERSION=$(hatch version)

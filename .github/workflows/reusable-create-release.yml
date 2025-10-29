@@ -17,16 +17,16 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: write
-    
+
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
-      
+
       - name: Extract version from commit
         id: extract
         uses: hope0hermes/SharedWorkflows/actions/extract-version@main
-      
+
       - name: Create GitHub Release
         if: steps.extract.outputs.is_version_bump == 'true'
         uses: hope0hermes/SharedWorkflows/actions/create-github-release@main
