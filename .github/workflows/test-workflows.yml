@@ -1,0 +1,57 @@
+name: Test Reusable Workflows
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/reusable-*.yml'
+      - '.github/workflows/test-workflows.yml'
+      - 'test-fixtures/**'
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/reusable-*.yml'
+      - '.github/workflows/test-workflows.yml'
+      - 'test-fixtures/**'
+  workflow_dispatch:
+
+jobs:
+  # Test 1: Reusable Tests Workflow
+  test-reusable-tests:
+    name: Test reusable-tests.yml
+    uses: ./.github/workflows/reusable-tests.yml
+    with:
+      python-version: "3.12"
+      working-directory: test-fixtures/python-project
+      coverage-threshold: 50
+      upload-coverage: false
+
+  # Test 2: Reusable Commitlint Workflow
+  test-reusable-commitlint:
+    name: Test reusable-commitlint.yml
+    uses: ./.github/workflows/reusable-commitlint.yml
+
+  # Summary
+  test-workflow-summary:
+    name: Workflow Test Summary
+    runs-on: ubuntu-latest
+    needs:
+      - test-reusable-tests
+      - test-reusable-commitlint
+    if: always()
+    steps:
+      - name: Summary
+        run: |
+          echo "## Reusable Workflow Test Results" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- reusable-tests.yml: ${{ needs.test-reusable-tests.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- reusable-commitlint.yml: ${{ needs.test-reusable-commitlint.result }}" >> $GITHUB_STEP_SUMMARY
+
+          if [ "${{ needs.test-reusable-tests.result }}" == "failure" ] || [ "${{ needs.test-reusable-commitlint.result }}" == "failure" ]; then
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "❌ Some workflow tests failed!" >> $GITHUB_STEP_SUMMARY
+            exit 1
+          else
+            echo "" >> $GITHUB_STEP_SUMMARY
+            echo "✅ All reusable workflows work correctly!" >> $GITHUB_STEP_SUMMARY
+          fi

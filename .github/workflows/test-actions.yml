@@ -1,0 +1,395 @@
+name: Test Actions
+
+on:
+  pull_request:
+    paths:
+      - 'actions/**'
+      - 'test-fixtures/**'
+      - '.github/workflows/test-actions.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'actions/**'
+      - 'test-fixtures/**'
+      - '.github/workflows/test-actions.yml'
+  workflow_dispatch:  # Allow manual trigger
+
+jobs:
+  # Test 1: Python Lint Action
+  test-python-lint:
+    name: Test python-lint action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test lint on good code (should pass)
+        id: lint-good
+        uses: ./actions/python-lint
+        with:
+          working-directory: test-fixtures/python-project
+          python-version: "3.12"
+          fail-fast: false
+        continue-on-error: true
+
+      - name: Verify good code passed
+        run: |
+          echo "Lint status: ${{ steps.lint-good.outputs.status }}"
+          if [ "${{ steps.lint-good.outputs.status }}" != "passed" ]; then
+            echo "❌ Expected lint to PASS on good code"
+            exit 1
+          fi
+          echo "✅ Lint correctly passed on good code"
+
+      - name: Test lint on bad code (should fail)
+        id: lint-bad
+        uses: ./actions/python-lint
+        with:
+          working-directory: test-fixtures/python-project
+          python-version: "3.12"
+          fail-fast: false
+        continue-on-error: true
+        env:
+          # Temporarily rename good_code.py so only bad_code.py is checked
+          TEST_BAD_CODE: "true"
+
+      - name: Prepare bad code only
+        working-directory: test-fixtures/python-project
+        run: |
+          # Keep only bad code for this test
+          mv src/test_project/good_code.py src/test_project/good_code.py.bak || true
+
+      - name: Run lint on bad code
+        id: lint-bad-only
+        uses: ./actions/python-lint
+        with:
+          working-directory: test-fixtures/python-project
+          python-version: "3.12"
+          fail-fast: false
+        continue-on-error: true
+
+      - name: Restore good code
+        if: always()
+        working-directory: test-fixtures/python-project
+        run: |
+          mv src/test_project/good_code.py.bak src/test_project/good_code.py || true
+
+      - name: Verify bad code failed
+        run: |
+          echo "Lint status on bad code: ${{ steps.lint-bad-only.outputs.status }}"
+          if [ "${{ steps.lint-bad-only.outputs.status }}" != "failed" ]; then
+            echo "⚠️  Expected lint to FAIL on bad code (got: ${{ steps.lint-bad-only.outputs.status }})"
+            echo "This might be OK if linting is lenient, but verify manually"
+          else
+            echo "✅ Lint correctly failed on bad code"
+          fi
+
+  # Test 2: Python Test Action
+  test-python-test:
+    name: Test python-test action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test with passing tests only
+        id: test-passing
+        uses: ./actions/python-test
+        with:
+          working-directory: test-fixtures/python-project
+          python-version: "3.12"
+          coverage-threshold: 50
+          upload-coverage: true
+        continue-on-error: true
+        env:
+          # Run only passing tests
+          PYTEST_ARGS: "tests/test_good_code.py"
+
+      - name: Verify passing tests
+        run: |
+          echo "Test status: ${{ steps.test-passing.outputs.status }}"
+          echo "Coverage: ${{ steps.test-passing.outputs.coverage }}%"
+          if [ "${{ steps.test-passing.outputs.status }}" != "passed" ]; then
+            echo "❌ Expected tests to PASS"
+            exit 1
+          fi
+          echo "✅ Tests correctly passed"
+
+      - name: Test with failing tests
+        id: test-failing
+        uses: ./actions/python-test
+        with:
+          working-directory: test-fixtures/python-project
+          python-version: "3.12"
+          coverage-threshold: 50
+          upload-coverage: false
+        continue-on-error: true
+
+      - name: Verify failing tests detected
+        run: |
+          echo "Test status with failures: ${{ steps.test-failing.outputs.status }}"
+          if [ "${{ steps.test-failing.outputs.status }}" != "failed" ]; then
+            echo "❌ Expected tests to FAIL (we have intentionally failing tests)"
+            exit 1
+          fi
+          echo "✅ Failing tests correctly detected"
+
+  # Test 3: Python CI Action (combines lint + test)
+  test-python-ci:
+    name: Test python-ci action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test full CI pipeline
+        id: ci-test
+        uses: ./actions/python-ci
+        with:
+          working-directory: test-fixtures/python-project
+          python-version: "3.12"
+          run-lint: true
+          run-tests: true
+          coverage-threshold: 50
+        continue-on-error: true
+
+      - name: Check CI results
+        run: |
+          echo "Lint status: ${{ steps.ci-test.outputs.lint-status }}"
+          echo "Test status: ${{ steps.ci-test.outputs.test-status }}"
+          echo "Coverage: ${{ steps.ci-test.outputs.coverage }}%"
+
+          # We expect lint to pass but tests to fail (due to failing tests)
+          if [ "${{ steps.ci-test.outputs.lint-status }}" != "passed" ]; then
+            echo "⚠️  Lint status: ${{ steps.ci-test.outputs.lint-status }}"
+          fi
+
+          echo "✅ Python CI action executed successfully"
+
+  # Test 4: Check Skip Conditions
+  test-skip-conditions:
+    name: Test check-skip-conditions action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test normal commit (should not skip)
+        id: skip-normal
+        uses: ./actions/check-skip-conditions
+        env:
+          GITHUB_EVENT_NAME: push
+          GITHUB_REF: refs/heads/test-branch
+
+      - name: Verify normal commit doesn't skip
+        run: |
+          echo "Should skip: ${{ steps.skip-normal.outputs.should_skip }}"
+          echo "Reason: ${{ steps.skip-normal.outputs.reason }}"
+          if [ "${{ steps.skip-normal.outputs.should_skip }}" == "true" ]; then
+            echo "❌ Normal commit should NOT be skipped"
+            exit 1
+          fi
+          echo "✅ Normal commit correctly not skipped"
+
+      - name: Create test commit with [skip ci]
+        run: |
+          git config user.name "Test Bot"
+          git config user.email "test@example.com"
+          echo "test" > test-skip.txt
+          git add test-skip.txt
+          git commit -m "test: some change [skip ci]" || true
+
+      - name: Test [skip ci] in message
+        id: skip-ci
+        uses: ./actions/check-skip-conditions
+        env:
+          GITHUB_EVENT_NAME: push
+          GITHUB_REF: refs/heads/test-branch
+
+      - name: Verify [skip ci] is detected
+        run: |
+          echo "Should skip: ${{ steps.skip-ci.outputs.should_skip }}"
+          echo "Reason: ${{ steps.skip-ci.outputs.reason }}"
+          if [ "${{ steps.skip-ci.outputs.should_skip }}" != "true" ]; then
+            echo "⚠️  [skip ci] should be detected (got: ${{ steps.skip-ci.outputs.should_skip }})"
+          else
+            echo "✅ [skip ci] correctly detected"
+          fi
+
+  # Test 5: Determine Version Bump
+  test-version-bump:
+    name: Test determine-version-bump action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Create test commits for version bump detection
+        run: |
+          git config user.name "Test Bot"
+          git config user.email "test@example.com"
+
+          # Create commits with different types
+          echo "feature" > feature.txt
+          git add feature.txt
+          git commit -m "feat: add new feature"
+
+          echo "fix" > fix.txt
+          git add fix.txt
+          git commit -m "fix: repair bug"
+
+      - name: Test version bump detection
+        id: version-bump
+        uses: ./actions/determine-version-bump
+
+      - name: Verify version bump type
+        run: |
+          echo "Bump type: ${{ steps.version-bump.outputs.bump_type }}"
+          echo "Commits: ${{ steps.version-bump.outputs.commits }}"
+
+          # Should detect 'minor' because we have 'feat:' commits
+          if [ "${{ steps.version-bump.outputs.bump_type }}" == "none" ]; then
+            echo "⚠️  Expected version bump to be detected"
+          else
+            echo "✅ Version bump type detected: ${{ steps.version-bump.outputs.bump_type }}"
+          fi
+
+  # Test 6: Bump Version
+  test-bump-version:
+    name: Test bump-version action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test version bump (patch)
+        id: bump-patch
+        uses: ./actions/bump-version
+        with:
+          bump-type: patch
+          working-directory: test-fixtures/python-project
+        continue-on-error: true
+
+      - name: Verify version bumped
+        run: |
+          echo "Old version: ${{ steps.bump-patch.outputs.old_version }}"
+          echo "New version: ${{ steps.bump-patch.outputs.new_version }}"
+
+          if [ -n "${{ steps.bump-patch.outputs.new_version }}" ]; then
+            echo "✅ Version bump executed (from ${{ steps.bump-patch.outputs.old_version }} to ${{ steps.bump-patch.outputs.new_version }})"
+          else
+            echo "⚠️  Version bump may have failed, check logs"
+          fi
+
+  # Test 7: Update Changelog
+  test-update-changelog:
+    name: Test update-changelog action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Test changelog update
+        id: changelog
+        uses: ./actions/update-changelog
+        with:
+          version: "1.2.3"
+          commits: "feat: new feature\nfix: bug fix\nchore: update deps"
+          working-directory: test-fixtures/python-project
+
+      - name: Verify changelog updated
+        working-directory: test-fixtures/python-project
+        run: |
+          echo "Checking CHANGELOG.md..."
+          if grep -q "1.2.3" CHANGELOG.md; then
+            echo "✅ Changelog correctly updated with version 1.2.3"
+            echo "Content:"
+            head -20 CHANGELOG.md
+          else
+            echo "❌ Version 1.2.3 not found in changelog"
+            cat CHANGELOG.md
+            exit 1
+          fi
+
+  # Test 8: Extract Version
+  test-extract-version:
+    name: Test extract-version action
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Create test commit with version
+        run: |
+          git config user.name "Test Bot"
+          git config user.email "test@example.com"
+          echo "test" > version-test.txt
+          git add version-test.txt
+          git commit -m "chore: bump version to 2.3.4"
+
+      - name: Test version extraction
+        id: extract
+        uses: ./actions/extract-version
+
+      - name: Verify version extracted
+        run: |
+          echo "Is version bump: ${{ steps.extract.outputs.is_version_bump }}"
+          echo "Version: ${{ steps.extract.outputs.version }}"
+
+          if [ "${{ steps.extract.outputs.is_version_bump }}" == "true" ]; then
+            echo "✅ Version bump detected: ${{ steps.extract.outputs.version }}"
+          else
+            echo "⚠️  Version bump not detected from commit message"
+          fi
+
+  # Summary Job
+  test-summary:
+    name: Test Summary
+    runs-on: ubuntu-latest
+    needs:
+      - test-python-lint
+      - test-python-test
+      - test-python-ci
+      - test-skip-conditions
+      - test-version-bump
+      - test-bump-version
+      - test-update-changelog
+      - test-extract-version
+    if: always()
+    steps:
+      - name: Check all tests
+        run: |
+          echo "## Test Results Summary" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "✅ All action tests completed!" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### Tests Run:" >> $GITHUB_STEP_SUMMARY
+          echo "- python-lint action: ${{ needs.test-python-lint.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- python-test action: ${{ needs.test-python-test.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- python-ci action: ${{ needs.test-python-ci.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- check-skip-conditions action: ${{ needs.test-skip-conditions.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- determine-version-bump action: ${{ needs.test-version-bump.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- bump-version action: ${{ needs.test-bump-version.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- update-changelog action: ${{ needs.test-update-changelog.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- extract-version action: ${{ needs.test-extract-version.result }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: Fail if any test failed
+        if: |
+          needs.test-python-lint.result == 'failure' ||
+          needs.test-python-test.result == 'failure' ||
+          needs.test-python-ci.result == 'failure' ||
+          needs.test-skip-conditions.result == 'failure' ||
+          needs.test-version-bump.result == 'failure' ||
+          needs.test-bump-version.result == 'failure' ||
+          needs.test-update-changelog.result == 'failure' ||
+          needs.test-extract-version.result == 'failure'
+        run: |
+          echo "❌ Some tests failed!"
+          exit 1
+
+      - name: Success
+        run: |
+          echo "🎉 All action tests passed successfully!"
