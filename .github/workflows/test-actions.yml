@@ -2,17 +2,11 @@ name: Test Actions
 
 on:
   pull_request:
-    paths:
-      - 'actions/**'
-      - 'test-fixtures/**'
-      - '.github/workflows/test-actions.yml'
+    branches:
+      - main
   push:
     branches:
       - main
-    paths:
-      - 'actions/**'
-      - 'test-fixtures/**'
-      - '.github/workflows/test-actions.yml'
   workflow_dispatch:  # Allow manual trigger
 
 jobs:

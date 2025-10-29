@@ -1,5 +1,8 @@
 # SharedWorkflows
 
+[![Version](https://img.shields.io/badge/version-1.0.0-blue.svg)](https://github.com/hope0hermes/SharedWorkflows/releases)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 Reusable GitHub Actions workflows and composite actions for Python projects. Provides a complete CI/CD pipeline with testing, linting, automated releases, and more.
 
 ## 🚀 Quick Start
@@ -25,8 +28,6 @@ jobs:
       python-version: "3.12"
       package-name: "my_package"
       coverage-threshold: 80
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 **`.github/workflows/commitlint.yml`**
@@ -70,8 +71,6 @@ on:
 jobs:
   create-release:
     uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-create-release.yml@main
-    secrets:
-      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 ```
 
 **Result**: Complete CI/CD automation in ~40 lines total! 🎉
@@ -109,13 +108,13 @@ jobs:
 
 ## 🎯 Features
 
-✅ **Zero Configuration** - Works out of the box for Python/hatch projects  
-✅ **Fully Automated** - Version bumping, changelog updates, releases  
-✅ **Conventional Commits** - Semantic versioning from commit messages  
-✅ **Flexible** - Use complete workflows OR individual actions  
-✅ **Efficient** - Smart skip logic, concurrency control  
-✅ **Well Documented** - Every action and workflow documented  
-✅ **Battle Tested** - Used in production by StravaAnalyzer and StravaFetcher  
+✅ **Zero Configuration** - Works out of the box for Python/hatch projects
+✅ **Fully Automated** - Version bumping, changelog updates, releases
+✅ **Conventional Commits** - Semantic versioning from commit messages
+✅ **Flexible** - Use complete workflows OR individual actions
+✅ **Efficient** - Smart skip logic, concurrency control
+✅ **Well Documented** - Every action and workflow documented
+✅ **Battle Tested** - Used in production by StravaAnalyzer and StravaFetcher
 
 ---
 
@@ -123,8 +122,9 @@ jobs:
 
 - [Usage Guide](docs/USAGE.md) - Detailed usage examples
 - [Migration Guide](docs/MIGRATION.md) - Migrate existing projects
-- [Actions Reference](docs/ACTIONS.md) - Individual action documentation
-- [Examples](docs/EXAMPLES.md) - Real-world usage patterns
+- [Testing Guide](TESTING.md) - How to test the workflows
+- [Version Management](docs/VERSION_MANAGEMENT.md) - How to release new versions
+- [Changelog](CHANGELOG.md) - Version history and changes
 
 ---
 
@@ -147,21 +147,21 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       # Custom pre-check
       - name: Verify dependencies
         run: ./scripts/check-deps.sh
-      
+
       # Reusable linting action
       - name: Lint code
         uses: hope0hermes/SharedWorkflows/actions/python-lint@main
         with:
           python-version: "3.12"
-      
+
       # Custom validation
       - name: Validate schemas
         run: python scripts/validate.py
-      
+
       # Reusable testing action
       - name: Run tests
         uses: hope0hermes/SharedWorkflows/actions/python-test@main
@@ -175,7 +175,7 @@ jobs:
 jobs:
   lint:
     uses: hope0hermes/SharedWorkflows/actions/python-lint@main
-  
+
   test:
     uses: hope0hermes/SharedWorkflows/actions/python-test@main
 ```
