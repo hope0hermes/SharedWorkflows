@@ -82,7 +82,13 @@ Based on changes:
 - New features? → Minor bump (e.g., 1.2.3 → 1.3.0)
 - Only fixes? → Patch bump (e.g., 1.2.3 → 1.2.4)
 
-### 4. Bump Version
+### 4. Create Release Branch
+
+```bash
+git checkout -b release/v1.1.0
+```
+
+### 5. Bump Version
 
 ```bash
 ./scripts/version.sh bump 1.1.0
@@ -95,7 +101,7 @@ This will:
 - Add new empty `[Unreleased]` section
 - Update comparison links at bottom of CHANGELOG.md
 
-### 5. Review Changes
+### 6. Review Changes
 
 ```bash
 git diff
@@ -107,7 +113,19 @@ Check that:
 - ✅ CHANGELOG.md has dated version section
 - ✅ CHANGELOG.md has new [Unreleased] section
 
-### 6. Commit Version Bump
+### 6. Review Changes
+
+```bash
+git diff
+```
+
+Check that:
+- ✅ VERSION file has new version
+- ✅ README.md badge updated
+- ✅ CHANGELOG.md has dated version section
+- ✅ CHANGELOG.md has new [Unreleased] section
+
+### 7. Commit Version Bump
 
 ```bash
 git add VERSION CHANGELOG.md README.md
@@ -116,17 +134,28 @@ git commit -m "chore: bump version to 1.1.0"
 
 **Important:** Use conventional commit format with `chore:` type.
 
-### 7. Push to Main
+### 8. Push Release Branch and Create PR
 
 ```bash
-git push origin main
+git push origin release/v1.1.0
 ```
 
-Or if on a branch, create PR and merge first.
+Then create PR:
+1. Go to: https://github.com/hope0hermes/SharedWorkflows/compare
+2. Select: `base: main` ← `compare: release/v1.1.0`
+3. Title: `chore: bump version to 1.1.0`
+4. Create PR and wait for tests to pass
 
-### 8. Create Git Tag
+### 9. Merge PR to Main
+
+Once tests pass and PR is approved, merge to main.
+
+### 10. Pull Latest Main and Create Git Tag
 
 ```bash
+git checkout main
+git pull origin main
+
 ./scripts/version.sh tag
 ```
 
@@ -135,7 +164,7 @@ Or manually:
 git tag -a v1.1.0 -m "Release v1.1.0"
 ```
 
-### 9. Push Tag
+### 11. Push Tag
 
 ```bash
 git push origin v1.1.0
@@ -143,7 +172,7 @@ git push origin v1.1.0
 
 **Important:** Don't forget this step! Tags are not pushed by default.
 
-### 10. Create GitHub Release
+### 12. Create GitHub Release
 
 1. Go to: https://github.com/hope0hermes/SharedWorkflows/releases/new
 2. Click "Choose a tag" → select `v1.1.0`
@@ -152,7 +181,7 @@ git push origin v1.1.0
 5. Check "Set as the latest release"
 6. Click "Publish release"
 
-### 11. Verify
+### 13. Verify
 
 Check that users can now reference:
 ```yaml
@@ -325,12 +354,17 @@ Copy this checklist when doing a release:
 ## Release Checklist for v1.x.x
 
 - [ ] All changes merged to main
-- [ ] CHANGELOG.md updated with all changes
+- [ ] CHANGELOG.md updated with all changes under [Unreleased]
 - [ ] Version number decided (major/minor/patch)
+- [ ] Created release branch: git checkout -b release/v1.x.x
 - [ ] Ran: ./scripts/version.sh bump 1.x.x
 - [ ] Reviewed diff (VERSION, CHANGELOG.md, README.md)
 - [ ] Committed: git commit -m "chore: bump version to 1.x.x"
-- [ ] Pushed: git push origin main
+- [ ] Pushed branch: git push origin release/v1.x.x
+- [ ] Created PR from release/v1.x.x to main
+- [ ] Tests passed on PR
+- [ ] Merged PR to main
+- [ ] Checked out main and pulled: git checkout main && git pull
 - [ ] Tagged: ./scripts/version.sh tag
 - [ ] Pushed tag: git push origin v1.x.x
 - [ ] Created GitHub Release
