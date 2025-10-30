@@ -42,30 +42,30 @@ jobs:
       
       - name: Check skip conditions
         id: skip_check
-        uses: ./actions/check-skip-conditions
+        uses: hope0hermes/SharedWorkflows/actions/check-skip-conditions@main
       
       - name: Determine version bump type
         if: steps.skip_check.outputs.should_skip != 'true'
         id: bump_type
-        uses: ./actions/determine-version-bump
+        uses: hope0hermes/SharedWorkflows/actions/determine-version-bump@main
       
       - name: Bump version
         if: steps.skip_check.outputs.should_skip != 'true' && steps.bump_type.outputs.bump_type != 'none'
         id: version
-        uses: ./actions/bump-version
+        uses: hope0hermes/SharedWorkflows/actions/bump-version@main
         with:
           bump-type: ${{ steps.bump_type.outputs.bump_type }}
       
       - name: Update changelog
         if: steps.skip_check.outputs.should_skip != 'true' && steps.bump_type.outputs.bump_type != 'none'
-        uses: ./actions/update-changelog
+        uses: hope0hermes/SharedWorkflows/actions/update-changelog@main
         with:
           version: ${{ steps.version.outputs.new_version }}
           commits: ${{ steps.bump_type.outputs.commits }}
       
       - name: Create version bump PR
         if: steps.skip_check.outputs.should_skip != 'true' && steps.bump_type.outputs.bump_type != 'none'
-        uses: ./actions/create-version-pr
+        uses: hope0hermes/SharedWorkflows/actions/create-version-pr@main
         with:
           version: ${{ steps.version.outputs.new_version }}
           package-path: ${{ inputs.package-path }}
