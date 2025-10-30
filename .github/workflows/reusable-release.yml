@@ -51,10 +51,6 @@ jobs:
         id: skip_check
         uses: ./.github/actions-temp/actions/check-skip-conditions
       
-      - name: Check skip conditions
-        id: skip_check
-        uses: ./.github/actions-temp/actions/check-skip-conditions
-      
       - name: Determine version bump type
         if: steps.skip_check.outputs.should_skip != 'true'
         id: bump_type
