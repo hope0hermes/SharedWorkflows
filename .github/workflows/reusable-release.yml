@@ -40,39 +40,32 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.PAT_TOKEN }}
       
-      - name: Checkout SharedWorkflows actions
-        uses: actions/checkout@v4
-        with:
-          repository: hope0hermes/SharedWorkflows
-          ref: main
-          path: .github/actions-temp
-      
       - name: Check skip conditions
         id: skip_check
-        uses: .github/actions-temp/actions/check-skip-conditions
+        uses: hope0hermes/SharedWorkflows/actions/check-skip-conditions@main
       
       - name: Determine version bump type
         if: steps.skip_check.outputs.should_skip != 'true'
         id: bump_type
-        uses: .github/actions-temp/actions/determine-version-bump
+        uses: hope0hermes/SharedWorkflows/actions/determine-version-bump@main
       
       - name: Bump version
         if: steps.skip_check.outputs.should_skip != 'true' && steps.bump_type.outputs.bump_type != 'none'
         id: version
-        uses: .github/actions-temp/actions/bump-version
+        uses: hope0hermes/SharedWorkflows/actions/bump-version@main
         with:
           bump-type: ${{ steps.bump_type.outputs.bump_type }}
       
       - name: Update changelog
         if: steps.skip_check.outputs.should_skip != 'true' && steps.bump_type.outputs.bump_type != 'none'
-        uses: .github/actions-temp/actions/update-changelog
+        uses: hope0hermes/SharedWorkflows/actions/update-changelog@main
         with:
           version: ${{ steps.version.outputs.new_version }}
           commits: ${{ steps.bump_type.outputs.commits }}
       
       - name: Create version bump PR
         if: steps.skip_check.outputs.should_skip != 'true' && steps.bump_type.outputs.bump_type != 'none'
-        uses: .github/actions-temp/actions/create-version-pr
+        uses: hope0hermes/SharedWorkflows/actions/create-version-pr@main
         with:
           version: ${{ steps.version.outputs.new_version }}
           package-path: ${{ inputs.package-path }}
