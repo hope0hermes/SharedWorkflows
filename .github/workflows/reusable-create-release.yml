@@ -32,11 +32,11 @@ jobs:
 
       - name: Extract version from commit
         id: extract
-        uses: ./.github/actions-temp/actions/extract-version
+        uses: .github/actions-temp/actions/extract-version
 
       - name: Create GitHub Release
         if: steps.extract.outputs.is_version_bump == 'true'
-        uses: ./.github/actions-temp/actions/create-github-release
+        uses: .github/actions-temp/actions/create-github-release
         with:
           version: ${{ steps.extract.outputs.version }}
           github-token: ${{ secrets.GITHUB_TOKEN }}

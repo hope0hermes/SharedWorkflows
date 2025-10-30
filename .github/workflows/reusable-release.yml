@@ -49,30 +49,30 @@ jobs:
       
       - name: Check skip conditions
         id: skip_check
-        uses: ./.github/actions-temp/actions/check-skip-conditions
+        uses: .github/actions-temp/actions/check-skip-conditions
       
       - name: Determine version bump type
         if: steps.skip_check.outputs.should_skip != 'true'
         id: bump_type
-        uses: ./.github/actions-temp/actions/determine-version-bump
+        uses: .github/actions-temp/actions/determine-version-bump
       
       - name: Bump version
         if: steps.skip_check.outputs.should_skip != 'true' && steps.bump_type.outputs.bump_type != 'none'
         id: version
-        uses: ./.github/actions-temp/actions/bump-version
+        uses: .github/actions-temp/actions/bump-version
         with:
           bump-type: ${{ steps.bump_type.outputs.bump_type }}
       
       - name: Update changelog
         if: steps.skip_check.outputs.should_skip != 'true' && steps.bump_type.outputs.bump_type != 'none'
-        uses: ./.github/actions-temp/actions/update-changelog
+        uses: .github/actions-temp/actions/update-changelog
         with:
           version: ${{ steps.version.outputs.new_version }}
           commits: ${{ steps.bump_type.outputs.commits }}
       
       - name: Create version bump PR
         if: steps.skip_check.outputs.should_skip != 'true' && steps.bump_type.outputs.bump_type != 'none'
-        uses: ./.github/actions-temp/actions/create-version-pr
+        uses: .github/actions-temp/actions/create-version-pr
         with:
           version: ${{ steps.version.outputs.new_version }}
           package-path: ${{ inputs.package-path }}

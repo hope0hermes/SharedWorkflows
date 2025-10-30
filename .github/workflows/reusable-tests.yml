@@ -75,7 +75,7 @@ jobs:
           path: .github/actions-temp
 
       - name: Run Python linting
-        uses: ./.github/actions-temp/actions/python-lint
+        uses: .github/actions-temp/actions/python-lint
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ inputs.working-directory }}
@@ -97,7 +97,7 @@ jobs:
           path: .github/actions-temp
 
       - name: Run Python tests
-        uses: ./.github/actions-temp/actions/python-test
+        uses: .github/actions-temp/actions/python-test
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ inputs.working-directory }}
