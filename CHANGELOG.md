@@ -8,12 +8,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-# Changelog
-
-## Unreleased
-
-### Fixed
-- Fixed action resolution in reusable workflows by checking out SharedWorkflows actions locally instead of using remote references
+- Reverted to using remote action references (owner/repo/path@ref format) as GitHub Actions requires this format for composite actions in reusable workflows
 
 ## [1.0.0] - 2025-10-30
 
