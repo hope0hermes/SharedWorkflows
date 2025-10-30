@@ -47,14 +47,14 @@ runs:
         
         # Create PR body
         PR_BODY="Automated version bump to ${{ inputs.version }}
-
-This PR was automatically created by the release workflow.
-
-**Changes:**
-- Updated version in ${{ inputs.package-path }}
-- Updated CHANGELOG.md with release notes
-
-**Note:** After merging this PR, the GitHub Release will be automatically created by the create-release workflow."
+        
+        This PR was automatically created by the release workflow.
+        
+        Changes:
+        - Updated version in ${{ inputs.package-path }}
+        - Updated CHANGELOG.md with release notes
+        
+        Note: After merging this PR, the GitHub Release will be automatically created by the create-release workflow."
         
         # Create PR using gh CLI
         gh pr create \
