@@ -68,7 +68,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run Python linting
-        uses: ./actions/python-lint
+        uses: hope0hermes/SharedWorkflows/actions/python-lint@main
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ inputs.working-directory }}
@@ -83,7 +83,7 @@ jobs:
       - uses: actions/checkout@v4
 
       - name: Run Python tests
-        uses: ./actions/python-test
+        uses: hope0hermes/SharedWorkflows/actions/python-test@main
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ inputs.working-directory }}
