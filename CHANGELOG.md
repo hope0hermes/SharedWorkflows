@@ -8,7 +8,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 
 ### Fixed
-- Reusable workflows now use absolute paths (`hope0hermes/SharedWorkflows/actions/*@main`) instead of relative paths (`./actions/*`) to fix "action.yml not found" errors when called from external repositories
+# Changelog
+
+## Unreleased
+
+### Fixed
+- Fixed action resolution in reusable workflows by checking out SharedWorkflows actions locally instead of using remote references
+
+## [1.0.0] - 2025-10-30
+
+### Fixed
+- Fixed reusable workflows to use absolute paths for actions (hope0hermes/SharedWorkflows/actions/*@main) instead of relative paths (./actions/*)
 
 ### Added
 - Documentation updates for pytest-args parameter

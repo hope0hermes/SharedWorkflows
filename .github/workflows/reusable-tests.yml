@@ -67,8 +67,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Checkout SharedWorkflows actions
+        uses: actions/checkout@v4
+        with:
+          repository: hope0hermes/SharedWorkflows
+          ref: main
+          path: .github/actions-temp
+
       - name: Run Python linting
-        uses: hope0hermes/SharedWorkflows/actions/python-lint@main
+        uses: ./.github/actions-temp/actions/python-lint
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ inputs.working-directory }}
@@ -82,8 +89,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Checkout SharedWorkflows actions
+        uses: actions/checkout@v4
+        with:
+          repository: hope0hermes/SharedWorkflows
+          ref: main
+          path: .github/actions-temp
+
       - name: Run Python tests
-        uses: hope0hermes/SharedWorkflows/actions/python-test@main
+        uses: ./.github/actions-temp/actions/python-test
         with:
           python-version: ${{ inputs.python-version }}
           working-directory: ${{ inputs.working-directory }}
