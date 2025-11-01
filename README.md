@@ -122,12 +122,12 @@ jobs:
 
 - [Usage Guide](docs/USAGE.md) - Detailed usage examples
 - [Migration Guide](docs/MIGRATION.md) - Migrate existing projects
-- [Development Guide](docs/DEVELOPMENT.md) - **Important: Testing workflow changes without polluting production repos**
+- [Ruleset Configuration](docs/RULESET_CONFIGURATION.md) - Branch protection and ruleset setup
 - [Testing Guide](TESTING.md) - How to test the workflows
 - [Version Management](docs/VERSION_MANAGEMENT.md) - How to release new versions
 - [Changelog](CHANGELOG.md) - Version history and changes
 
-> **⚠️ For Contributors**: See [Development Guide](docs/DEVELOPMENT.md) for the planned test harness repository to avoid polluting production repos during development.
+> **💡 For Contributors**: Test workflow changes in [SharedWorkflows-TestHarness](https://github.com/hope0hermes/SharedWorkflows-TestHarness) to avoid polluting production repos.
 
 ---
 
