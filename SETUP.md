@@ -133,6 +133,20 @@ Now you can migrate StravaAnalyzer to use the shared workflows!
 
 See [docs/MIGRATION.md](docs/MIGRATION.md) for detailed instructions.
 
+### 6. Configure Branch Rulesets
+
+To ensure consistent quality standards across all repositories using SharedWorkflows, configure branch rulesets:
+
+1. Read the complete guide: [docs/RULESET_CONFIGURATION.md](docs/RULESET_CONFIGURATION.md)
+2. Apply the "main protection" ruleset to your `main` branch
+3. Verify consistency: `./scripts/verify-rulesets.sh --list`
+
+**Quick Setup:**
+- Go to repository Settings → Rules → Rulesets
+- Create new branch ruleset named "main protection"
+- Configure status checks for commitlint and your CI/CD jobs
+- Enable deletion and force-push protection
+
 ## Quick Test
 
 Before migrating real projects, test that everything works:
@@ -144,6 +158,9 @@ yamllint .github/workflows/*.yml
 
 # Check action syntax
 yamllint actions/*/action.yml
+
+# Verify rulesets (requires GitHub CLI)
+./scripts/verify-rulesets.sh --list
 ```
 
 ## Repository URLs
