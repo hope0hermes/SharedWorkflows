@@ -73,7 +73,22 @@ jobs:
     uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-create-release.yml@main
 ```
 
-**Result**: Complete CI/CD automation in ~40 lines total! 🎉
+**`.github/workflows/publish.yml`**
+```yaml
+name: Publish to GitHub Packages
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  publish:
+    uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-publish.yml@main
+    with:
+      registry: github
+```
+
+**Result**: Complete CI/CD automation from code to published package in ~50 lines total! 🎉
 
 ---
 
@@ -87,6 +102,7 @@ jobs:
 | `reusable-commitlint.yml` | Validate conventional commits | ~80 lines |
 | `reusable-release.yml` | Automated version bumping | ~150 lines |
 | `reusable-create-release.yml` | Create GitHub releases | ~70 lines |
+| `reusable-publish.yml` | Publish to GitHub Packages or PyPI | ~80 lines |
 
 ### Composite Actions
 
@@ -95,7 +111,7 @@ jobs:
 - `python-test` - Pytest with coverage
 - `python-ci` - Combined linting + testing
 
-**Release Actions:**
+**Release & Publishing Actions:**
 - `check-skip-conditions` - Skip logic for version bumps
 - `determine-version-bump` - Semantic version analysis
 - `bump-version` - Version bumping with hatch
@@ -103,6 +119,7 @@ jobs:
 - `create-version-pr` - PR creation for version bumps
 - `extract-version` - Extract version from commits
 - `create-github-release` - GitHub release creation
+- `python-publish` - Build and publish to GitHub Packages or PyPI
 
 ---
 
@@ -122,6 +139,7 @@ jobs:
 
 - [Usage Guide](docs/USAGE.md) - Detailed usage examples
 - [Migration Guide](docs/MIGRATION.md) - Migrate existing projects
+- [Publishing Guide](docs/PUBLISHING.md) - Package publishing & distribution
 - [Ruleset Configuration](docs/RULESET_CONFIGURATION.md) - Branch protection and ruleset setup
 - [Testing Guide](TESTING.md) - How to test the workflows
 - [Version Management](docs/VERSION_MANAGEMENT.md) - How to release new versions
