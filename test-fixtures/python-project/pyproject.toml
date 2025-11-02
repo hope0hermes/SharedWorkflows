@@ -6,6 +6,7 @@ build-backend = "hatchling.build"
 name = "test-project"
 version = "0.1.0"
 description = "Test fixture for SharedWorkflows testing"
+readme = "README.md"
 authors = [
     {name = "Test User", email = "test@example.com"},
 ]
