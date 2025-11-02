@@ -78,7 +78,7 @@ runs:
         TWINE_REPOSITORY_URL: https://pip.pkg.github.com/${{ inputs.repository-owner }}/simple/
       run: |
         echo "📤 Publishing to GitHub Packages..."
-        twine upload dist/* --non-interactive --skip-existing
+        twine upload dist/* --non-interactive
         VERSION=$(hatch version)
         echo "✅ Successfully published ${{ inputs.repository-owner }} version $VERSION to GitHub Packages"
         echo "📚 Install with:"
