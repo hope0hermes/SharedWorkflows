@@ -337,6 +337,161 @@ jobs:
             echo "⚠️  Version bump not detected from commit message"
           fi
 
+  # Test 9: Python Publish Action (Build Only)
+  test-python-publish-build:
+    name: Test python-publish action (build only)
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: test-fixtures/python-project
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install build tools manually
+        run: |
+          pip install hatch twine
+          echo "✅ Build tools installed"
+
+      - name: Test package build
+        run: |
+          echo "Building package..."
+          hatch build
+          echo "✅ Package built successfully"
+
+      - name: Check distributions
+        run: |
+          echo "Checking for built distributions..."
+          ls -lh dist/
+          
+          # Check for wheel
+          if ls dist/*.whl 1> /dev/null 2>&1; then
+            echo "✅ Wheel (.whl) file created"
+            ls dist/*.whl
+          else
+            echo "❌ No wheel file found"
+            exit 1
+          fi
+          
+          # Check for source distribution
+          if ls dist/*.tar.gz 1> /dev/null 2>&1; then
+            echo "✅ Source distribution (.tar.gz) created"
+            ls dist/*.tar.gz
+          else
+            echo "❌ No source distribution found"
+            exit 1
+          fi
+
+      - name: Validate distributions
+        run: |
+          echo "Validating distributions with twine..."
+          twine check dist/* --strict
+          echo "✅ Distribution validation passed"
+
+      - name: Check version
+        run: |
+          VERSION=$(hatch version)
+          echo "Package version: $VERSION"
+          if [ -n "$VERSION" ]; then
+            echo "✅ Version extracted: $VERSION"
+          else
+            echo "❌ Could not extract version"
+            exit 1
+          fi
+
+  # Test 10: Validate Action Metadata
+  test-action-metadata:
+    name: Validate action metadata files
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install action-validator
+        run: |
+          npm install -g action-validator
+
+      - name: Validate python-publish action.yml
+        run: |
+          echo "Validating python-publish action metadata..."
+          if [ -f "actions/python-publish/action.yml" ]; then
+            # Check basic YAML syntax
+            python3 -c "import yaml; yaml.safe_load(open('actions/python-publish/action.yml'))"
+            echo "✅ python-publish action.yml is valid YAML"
+            
+            # Check required fields
+            grep -q "name:" actions/python-publish/action.yml && echo "✅ Has name field"
+            grep -q "description:" actions/python-publish/action.yml && echo "✅ Has description field"
+            grep -q "inputs:" actions/python-publish/action.yml && echo "✅ Has inputs field"
+            grep -q "outputs:" actions/python-publish/action.yml && echo "✅ Has outputs field"
+            grep -q "runs:" actions/python-publish/action.yml && echo "✅ Has runs field"
+          else
+            echo "❌ python-publish action.yml not found"
+            exit 1
+          fi
+
+      - name: Validate all other action metadata
+        run: |
+          echo "Validating all action.yml files..."
+          for action_file in actions/*/action.yml; do
+            if [ -f "$action_file" ]; then
+              echo "Checking $action_file..."
+              python3 -c "import yaml; yaml.safe_load(open('$action_file'))"
+              echo "✅ $action_file is valid"
+            fi
+          done
+
+  # Test 11: Validate Workflow Files
+  test-workflow-syntax:
+    name: Validate workflow syntax
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate reusable-publish.yml
+        run: |
+          echo "Validating reusable-publish.yml syntax..."
+          if [ -f ".github/workflows/reusable-publish.yml" ]; then
+            # Check YAML syntax
+            python3 -c "import yaml; yaml.safe_load(open('.github/workflows/reusable-publish.yml'))"
+            echo "✅ reusable-publish.yml is valid YAML"
+            
+            # Check workflow_call trigger
+            if grep -q "workflow_call:" .github/workflows/reusable-publish.yml; then
+              echo "✅ Has workflow_call trigger"
+            else
+              echo "❌ Missing workflow_call trigger"
+              exit 1
+            fi
+            
+            # Check permissions
+            if grep -q "packages: write" .github/workflows/reusable-publish.yml; then
+              echo "✅ Has packages: write permission"
+            else
+              echo "⚠️  Missing packages: write permission"
+            fi
+          else
+            echo "❌ reusable-publish.yml not found"
+            exit 1
+          fi
+
+      - name: Validate all workflow files
+        run: |
+          echo "Validating all workflow YAML files..."
+          for workflow_file in .github/workflows/*.yml; do
+            if [ -f "$workflow_file" ]; then
+              echo "Checking $workflow_file..."
+              python3 -c "import yaml; yaml.safe_load(open('$workflow_file'))"
+              echo "✅ $workflow_file is valid"
+            fi
+          done
+
   # Summary Job
   test-summary:
     name: Test Summary
@@ -350,6 +505,9 @@ jobs:
       - test-bump-version
       - test-update-changelog
       - test-extract-version
+      - test-python-publish-build
+      - test-action-metadata
+      - test-workflow-syntax
     if: always()
     steps:
       - name: Check all tests
@@ -367,6 +525,9 @@ jobs:
           echo "- bump-version action: ${{ needs.test-bump-version.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- update-changelog action: ${{ needs.test-update-changelog.result }}" >> $GITHUB_STEP_SUMMARY
           echo "- extract-version action: ${{ needs.test-extract-version.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- python-publish action (build): ${{ needs.test-python-publish-build.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- action metadata validation: ${{ needs.test-action-metadata.result }}" >> $GITHUB_STEP_SUMMARY
+          echo "- workflow syntax validation: ${{ needs.test-workflow-syntax.result }}" >> $GITHUB_STEP_SUMMARY
 
       - name: Fail if any test failed
         if: |
@@ -377,7 +538,10 @@ jobs:
           needs.test-version-bump.result == 'failure' ||
           needs.test-bump-version.result == 'failure' ||
           needs.test-update-changelog.result == 'failure' ||
-          needs.test-extract-version.result == 'failure'
+          needs.test-extract-version.result == 'failure' ||
+          needs.test-python-publish-build.result == 'failure' ||
+          needs.test-action-metadata.result == 'failure' ||
+          needs.test-workflow-syntax.result == 'failure'
         run: |
           echo "❌ Some tests failed!"
           exit 1

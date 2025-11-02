@@ -1,0 +1,45 @@
+name: Reusable Publish
+
+on:
+  workflow_call:
+    inputs:
+      registry:
+        description: 'Registry to publish to (github|pypi)'
+        required: false
+        type: string
+        default: 'github'
+
+      python-version:
+        description: 'Python version to use for building'
+        required: false
+        type: string
+        default: '3.12'
+
+    secrets:
+      PUBLISH_TOKEN:
+        description: 'Authentication token (GITHUB_TOKEN or PYPI_TOKEN)'
+        required: false
+
+jobs:
+  publish:
+    name: Publish Package
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      packages: write  # Required for GitHub Packages
+
+    steps:
+      - name: Publish package
+        uses: hope0hermes/SharedWorkflows/actions/python-publish@main
+        with:
+          token: ${{ secrets.PUBLISH_TOKEN || secrets.GITHUB_TOKEN }}
+          registry: ${{ inputs.registry }}
+          repository-owner: ${{ github.repository_owner }}
+          python-version: ${{ inputs.python-version }}
+
+      - name: 📢 Published Successfully
+        run: |
+          echo "✅ Package published successfully!"
+          echo ""
+          echo "Registry: ${{ inputs.registry }}"
+          echo "Repository: ${{ github.repository }}"

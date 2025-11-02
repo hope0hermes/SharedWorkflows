@@ -1,0 +1,99 @@
+name: 'Publish Python Package'
+description: 'Build and publish Python package to GitHub Packages or PyPI'
+
+inputs:
+  token:
+    description: 'Authentication token (GITHUB_TOKEN or PYPI_TOKEN)'
+    required: true
+
+  registry:
+    description: 'Registry to publish to (github|pypi)'
+    required: false
+    default: 'github'
+
+  repository-owner:
+    description: 'GitHub repository owner (required for GitHub Packages)'
+    required: false
+
+  python-version:
+    description: 'Python version to use for building'
+    required: false
+    default: '3.12'
+
+outputs:
+  version:
+    description: 'Published version'
+    value: ${{ steps.get-version.outputs.version }}
+
+runs:
+  using: "composite"
+  steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+
+    - name: Setup Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ inputs.python-version }}
+
+    - name: Install build tools
+      shell: bash
+      run: |
+        echo "📦 Installing build tools (hatch, twine)..."
+        pip install --upgrade pip
+        pip install hatch twine
+        echo "✓ Build tools installed"
+
+    - name: Build distribution
+      shell: bash
+      run: |
+        echo "🔨 Building package distribution..."
+        hatch build
+        echo "✓ Build complete"
+        echo ""
+        echo "📦 Distribution files:"
+        ls -lh dist/
+
+    - name: Get version
+      id: get-version
+      shell: bash
+      run: |
+        VERSION=$(hatch version)
+        echo "version=$VERSION" >> $GITHUB_OUTPUT
+        echo "📌 Version: $VERSION"
+
+    - name: Validate distributions
+      shell: bash
+      run: |
+        echo "✓ Validating distribution metadata..."
+        twine check dist/* --strict
+        echo "✓ Distribution validation passed"
+
+    - name: Publish to GitHub Packages
+      if: inputs.registry == 'github'
+      shell: bash
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ inputs.token }}
+        TWINE_REPOSITORY_URL: https://pip.pkg.github.com/${{ inputs.repository-owner }}/simple/
+      run: |
+        echo "📤 Publishing to GitHub Packages..."
+        twine upload dist/* --non-interactive --skip-existing
+        VERSION=$(hatch version)
+        echo "✅ Successfully published ${{ inputs.repository-owner }} version $VERSION to GitHub Packages"
+        echo "📚 Install with:"
+        echo "   pip install ${GITHUB_REPOSITORY##*/}==$VERSION"
+
+    - name: Publish to PyPI
+      if: inputs.registry == 'pypi'
+      shell: bash
+      env:
+        TWINE_USERNAME: __token__
+        TWINE_PASSWORD: ${{ inputs.token }}
+      run: |
+        echo "📤 Publishing to PyPI..."
+        twine upload dist/* --non-interactive --skip-existing
+        VERSION=$(hatch version)
+        echo "✅ Successfully published version $VERSION to PyPI"
+        echo "📚 Install with:"
+        echo "   pip install ${GITHUB_REPOSITORY##*/}==$VERSION"
