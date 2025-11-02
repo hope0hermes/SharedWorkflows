@@ -6,11 +6,20 @@
 #   jobs:
 #     create-release:
 #       uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-create-release.yml
+#       secrets:
+#         github-token: ${{ secrets.PAT_TOKEN }}  # Optional: Use PAT to trigger release events
+#
+# Note: If you want the release to trigger publish workflows, you must use a PAT.
+#       Using GITHUB_TOKEN will not trigger subsequent workflow runs.
 
 name: Reusable Create Release
 
 on:
   workflow_call:
+    secrets:
+      github-token:
+        description: 'GitHub token for creating release (use PAT to trigger release events)'
+        required: false
 
 jobs:
   create-release:
@@ -32,4 +41,4 @@ jobs:
         uses: hope0hermes/SharedWorkflows/actions/create-github-release@main
         with:
           version: ${{ steps.extract.outputs.version }}
-          github-token: ${{ secrets.GITHUB_TOKEN }}
+          github-token: ${{ secrets.github-token || secrets.GITHUB_TOKEN }}

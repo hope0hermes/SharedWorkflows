@@ -368,7 +368,7 @@ jobs:
         run: |
           echo "Checking for built distributions..."
           ls -lh dist/
-          
+
           # Check for wheel
           if ls dist/*.whl 1> /dev/null 2>&1; then
             echo "✅ Wheel (.whl) file created"
@@ -377,7 +377,7 @@ jobs:
             echo "❌ No wheel file found"
             exit 1
           fi
-          
+
           # Check for source distribution
           if ls dist/*.tar.gz 1> /dev/null 2>&1; then
             echo "✅ Source distribution (.tar.gz) created"
@@ -423,7 +423,7 @@ jobs:
             # Check basic YAML syntax
             python3 -c "import yaml; yaml.safe_load(open('actions/python-publish/action.yml'))"
             echo "✅ python-publish action.yml is valid YAML"
-            
+
             # Check required fields
             grep -q "name:" actions/python-publish/action.yml && echo "✅ Has name field"
             grep -q "description:" actions/python-publish/action.yml && echo "✅ Has description field"
@@ -461,7 +461,7 @@ jobs:
             # Check YAML syntax
             python3 -c "import yaml; yaml.safe_load(open('.github/workflows/reusable-publish.yml'))"
             echo "✅ reusable-publish.yml is valid YAML"
-            
+
             # Check workflow_call trigger
             if grep -q "workflow_call:" .github/workflows/reusable-publish.yml; then
               echo "✅ Has workflow_call trigger"
@@ -469,7 +469,7 @@ jobs:
               echo "❌ Missing workflow_call trigger"
               exit 1
             fi
-            
+
             # Check permissions
             if grep -q "packages: write" .github/workflows/reusable-publish.yml; then
               echo "✅ Has packages: write permission"

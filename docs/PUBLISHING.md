@@ -227,7 +227,56 @@ jobs:
 
 **That's it!** No additional configuration needed.
 
-#### 2. Verify Your `pyproject.toml`
+#### 2. Configure Personal Access Token (PAT) for Release Automation
+
+**Important:** GitHub Actions using `GITHUB_TOKEN` cannot trigger other workflows (this prevents infinite loops). To enable the automatic publish workflow after releases are created, you need to use a Personal Access Token.
+
+**Steps to set up PAT:**
+
+1. **Create a Personal Access Token (Classic)**:
+   - Go to GitHub Settings → Developer Settings → Personal Access Tokens → Tokens (classic)
+   - Click "Generate new token (classic)"
+   - Name: `<YourRepo> Release Automation`
+   - Expiration: No expiration (or set as preferred)
+   - Select scopes:
+     - ✓ `repo` (full control of private repositories)
+     - ✓ `workflow` (update GitHub Action workflows)
+   - Click "Generate token" and copy it
+
+2. **Add PAT as Repository Secret**:
+   - Go to your repository → Settings → Secrets and variables → Actions
+   - Click "New repository secret"
+   - Name: `PAT_TOKEN`
+   - Value: Paste your PAT
+   - Click "Add secret"
+
+3. **Update Create Release Workflow**:
+
+Edit `.github/workflows/create-release.yml` to use the PAT:
+
+```yaml
+name: Create Release
+
+on:
+  push:
+    branches: [ main ]
+
+jobs:
+  create-release:
+    permissions:
+      contents: write
+    uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-create-release.yml@main
+    secrets:
+      github-token: ${{ secrets.PAT_TOKEN }}  # Use PAT instead of GITHUB_TOKEN
+```
+
+**Why is this needed?**
+- Using `GITHUB_TOKEN`: Release is created but publish workflow doesn't trigger
+- Using `PAT_TOKEN`: Release is created AND publish workflow triggers automatically
+
+**Security Note:** PATs have broader permissions than `GITHUB_TOKEN`. Store them securely as repository secrets and never commit them to code.
+
+#### 3. Verify Your `pyproject.toml`
 
 Ensure your project is configured for publishing:
 
