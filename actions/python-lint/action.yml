@@ -11,12 +11,12 @@ inputs:
     description: 'Python version to use'
     required: false
     default: '3.12'
-  
+
   working-directory:
     description: 'Directory containing the Python project'
     required: false
     default: '.'
-  
+
   fail-fast:
     description: 'Stop on first error'
     required: false
@@ -49,10 +49,10 @@ runs:
       shell: bash
       run: |
         echo "Running Python linting checks..."
-        
+
         # Install dev dependencies with UV
         ~/.local/bin/uv sync --extra dev
-        
+
         # Run linting tools directly
         if ~/.local/bin/uv run ruff check . && \
            ~/.local/bin/uv run mypy src/ 2>/dev/null; then
