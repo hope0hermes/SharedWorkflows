@@ -40,19 +40,19 @@ runs:
       with:
         python-version: ${{ inputs.python-version }}
 
-    - name: Install build tools
+    - name: Install UV
       shell: bash
       run: |
-        echo "📦 Installing build tools (hatch, twine)..."
-        pip install --upgrade pip
-        pip install hatch twine
-        echo "✓ Build tools installed"
+        echo "📦 Installing uv..."
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        echo "$HOME/.local/bin" >> $GITHUB_PATH
+        echo "✓ UV installed"
 
     - name: Build distribution
       shell: bash
       run: |
-        echo "🔨 Building package distribution..."
-        hatch build
+        echo "🔨 Building package with UV..."
+        uv build
         echo "✓ Build complete"
         echo ""
         echo "📦 Distribution files:"
@@ -62,16 +62,9 @@ runs:
       id: get-version
       shell: bash
       run: |
-        VERSION=$(hatch version)
+        VERSION=$(grep -oP '__version__\s*=\s*"\K[^"]+' src/*/__.py 2>/dev/null || grep -oP 'version\s*=\s*"\K[^"]+' pyproject.toml || echo "unknown")
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "📌 Version: $VERSION"
-
-    - name: Validate distributions
-      shell: bash
-      run: |
-        echo "✓ Validating distribution metadata..."
-        twine check dist/* --strict
-        echo "✓ Distribution validation passed"
 
     - name: Publish to PyPI
       if: inputs.registry == 'pypi'
@@ -81,11 +74,9 @@ runs:
         TWINE_PASSWORD: ${{ inputs.token }}
       run: |
         echo "📤 Publishing to PyPI..."
-        twine upload dist/* --non-interactive --skip-existing
-        VERSION=$(hatch version)
+        uv publish --token ${{ inputs.token }}
+        VERSION=${{ steps.get-version.outputs.version }}
         echo "✅ Successfully published version $VERSION to PyPI"
-        echo "📚 Install with:"
-        echo "   pip install ${GITHUB_REPOSITORY##*/}==$VERSION"
 
     - name: Publish to Custom Registry
       if: inputs.registry == 'custom'
@@ -97,9 +88,6 @@ runs:
       run: |
         echo "📤 Publishing to custom registry..."
         echo "   Registry: ${{ inputs.custom-registry-url }}"
-        echo "   Username: ${{ inputs.custom-registry-username }}"
-        twine upload dist/* --non-interactive
-        VERSION=$(hatch version)
+        uv publish
+        VERSION=${{ steps.get-version.outputs.version }}
         echo "✅ Successfully published version $VERSION to custom registry"
-        echo "📚 Install with:"
-        echo "   pip install --index-url ${{ inputs.custom-registry-url }}+simple/ --trusted-host <registry-host> ${GITHUB_REPOSITORY##*/}==$VERSION"
