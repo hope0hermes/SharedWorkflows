@@ -62,7 +62,7 @@ runs:
       id: get-version
       shell: bash
       run: |
-        VERSION=$(grep -oP '__version__\s*=\s*"\K[^"]+' src/*/__.py 2>/dev/null || grep -oP 'version\s*=\s*"\K[^"]+' pyproject.toml || echo "unknown")
+        VERSION=$(grep -oP '__version__\s*=\s*"\K[^"]+' src/*/__init__.py 2>/dev/null | head -1 || grep -oP 'version\s*=\s*"\K[^"]+' pyproject.toml 2>/dev/null | head -1 || echo "unknown")
         echo "version=$VERSION" >> $GITHUB_OUTPUT
         echo "📌 Version: $VERSION"
 
@@ -82,12 +82,12 @@ runs:
       if: inputs.registry == 'custom'
       shell: bash
       env:
-        TWINE_USERNAME: ${{ inputs.custom-registry-username }}
-        TWINE_PASSWORD: ${{ inputs.token }}
-        TWINE_REPOSITORY_URL: ${{ inputs.custom-registry-url }}
+        UV_PUBLISH_URL: ${{ inputs.custom-registry-url }}
+        UV_PUBLISH_USERNAME: ${{ inputs.custom-registry-username }}
+        UV_PUBLISH_PASSWORD: ${{ inputs.token }}
       run: |
         echo "📤 Publishing to custom registry..."
-        echo "   Registry: ${{ inputs.custom-registry-url }}"
-        uv publish
+        echo "   Registry: $UV_PUBLISH_URL"
+        uv publish --publish-url "$UV_PUBLISH_URL" --username "$UV_PUBLISH_USERNAME" --password "$UV_PUBLISH_PASSWORD"
         VERSION=${{ steps.get-version.outputs.version }}
         echo "✅ Successfully published version $VERSION to custom registry"
