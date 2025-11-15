@@ -75,7 +75,7 @@ jobs:
 
 **`.github/workflows/publish.yml`**
 ```yaml
-name: Publish to GitHub Packages
+name: Publish Package
 
 on:
   release:
@@ -85,8 +85,15 @@ jobs:
   publish:
     uses: hope0hermes/SharedWorkflows/.github/workflows/reusable-publish.yml@main
     with:
-      registry: github
+      registry: custom  # Options: github, pypi, custom
+      custom-registry-url: ${{ secrets.DEVPI_URL }}  # For custom registries
+      custom-registry-username: ${{ secrets.DEVPI_USERNAME }}
+    secrets:
+      PUBLISH_TOKEN: ${{ secrets.DEVPI_PASSWORD }}
 ```
+
+> **💡 New**: Custom registry support! Publish to private PyPI-compatible indexes like Devpi.
+> See [Devpi Integration Guide](docs/DEVPI_INTEGRATION.md) for setup instructions.
 
 **Result**: Complete CI/CD automation from code to published package in ~50 lines total! 🎉
 
@@ -102,7 +109,7 @@ jobs:
 | `reusable-commitlint.yml` | Validate conventional commits | ~80 lines |
 | `reusable-release.yml` | Automated version bumping | ~150 lines |
 | `reusable-create-release.yml` | Create GitHub releases | ~70 lines |
-| `reusable-publish.yml` | Publish to GitHub Packages or PyPI | ~80 lines |
+| `reusable-publish.yml` | Publish to PyPI or custom registries | ~80 lines |
 
 ### Composite Actions
 
@@ -119,7 +126,7 @@ jobs:
 - `create-version-pr` - PR creation for version bumps
 - `extract-version` - Extract version from commits
 - `create-github-release` - GitHub release creation
-- `python-publish` - Build and publish to GitHub Packages or PyPI
+- `python-publish` - Build and publish to PyPI or custom registries
 
 ---
 
@@ -140,6 +147,7 @@ jobs:
 - [Usage Guide](docs/USAGE.md) - Detailed usage examples
 - [Migration Guide](docs/MIGRATION.md) - Migrate existing projects
 - [Publishing Guide](docs/PUBLISHING.md) - Package publishing & distribution
+- [Devpi Integration](docs/DEVPI_INTEGRATION.md) - Private package index setup
 - [Ruleset Configuration](docs/RULESET_CONFIGURATION.md) - Branch protection and ruleset setup
 - [Testing Guide](TESTING.md) - How to test the workflows
 - [Version Management](docs/VERSION_MANAGEMENT.md) - How to release new versions

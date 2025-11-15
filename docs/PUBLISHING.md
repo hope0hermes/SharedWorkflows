@@ -1,6 +1,6 @@
 # Publishing Guide: From Code to Package Distribution
 
-This guide covers everything you need to know about publishing Python packages using SharedWorkflows and GitHub Packages. It includes a crash tutorial for the complete release process.
+This guide covers everything you need to know about publishing Python packages using SharedWorkflows. It includes a crash tutorial for the complete release process.
 
 ## Table of Contents
 
