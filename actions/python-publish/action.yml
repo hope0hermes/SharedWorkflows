@@ -1,18 +1,22 @@
 name: 'Publish Python Package'
-description: 'Build and publish Python package to GitHub Packages or PyPI'
+description: 'Build and publish Python package to PyPI or custom registry'
 
 inputs:
   token:
-    description: 'Authentication token (GITHUB_TOKEN or PYPI_TOKEN)'
+    description: 'Authentication token (PYPI_TOKEN or custom registry password)'
     required: true
 
   registry:
-    description: 'Registry to publish to (github|pypi)'
+    description: 'Registry to publish to (pypi|custom)'
     required: false
-    default: 'github'
+    default: 'custom'
 
-  repository-owner:
-    description: 'GitHub repository owner (required for GitHub Packages)'
+  custom-registry-url:
+    description: 'Custom registry URL (required when registry=custom, e.g., http://devpi.example.com/user/index/)'
+    required: false
+
+  custom-registry-username:
+    description: 'Username for custom registry (required when registry=custom)'
     required: false
 
   python-version:
@@ -69,21 +73,6 @@ runs:
         twine check dist/* --strict
         echo "✓ Distribution validation passed"
 
-    - name: Publish to GitHub Packages
-      if: inputs.registry == 'github'
-      shell: bash
-      env:
-        TWINE_USERNAME: __token__
-        TWINE_PASSWORD: ${{ inputs.token }}
-        TWINE_REPOSITORY_URL: https://pip.pkg.github.com/${{ inputs.repository-owner }}/simple/
-      run: |
-        echo "📤 Publishing to GitHub Packages..."
-        twine upload dist/* --non-interactive
-        VERSION=$(hatch version)
-        echo "✅ Successfully published ${{ inputs.repository-owner }} version $VERSION to GitHub Packages"
-        echo "📚 Install with:"
-        echo "   pip install ${GITHUB_REPOSITORY##*/}==$VERSION"
-
     - name: Publish to PyPI
       if: inputs.registry == 'pypi'
       shell: bash
@@ -97,3 +86,20 @@ runs:
         echo "✅ Successfully published version $VERSION to PyPI"
         echo "📚 Install with:"
         echo "   pip install ${GITHUB_REPOSITORY##*/}==$VERSION"
+
+    - name: Publish to Custom Registry
+      if: inputs.registry == 'custom'
+      shell: bash
+      env:
+        TWINE_USERNAME: ${{ inputs.custom-registry-username }}
+        TWINE_PASSWORD: ${{ inputs.token }}
+        TWINE_REPOSITORY_URL: ${{ inputs.custom-registry-url }}
+      run: |
+        echo "📤 Publishing to custom registry..."
+        echo "   Registry: ${{ inputs.custom-registry-url }}"
+        echo "   Username: ${{ inputs.custom-registry-username }}"
+        twine upload dist/* --non-interactive
+        VERSION=$(hatch version)
+        echo "✅ Successfully published version $VERSION to custom registry"
+        echo "📚 Install with:"
+        echo "   pip install --index-url ${{ inputs.custom-registry-url }}+simple/ --trusted-host <registry-host> ${GITHUB_REPOSITORY##*/}==$VERSION"

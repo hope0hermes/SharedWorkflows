@@ -4,10 +4,10 @@ on:
   workflow_call:
     inputs:
       registry:
-        description: 'Registry to publish to (github|pypi)'
+        description: 'Registry to publish to (pypi|custom)'
         required: false
         type: string
-        default: 'github'
+        default: 'custom'
 
       python-version:
         description: 'Python version to use for building'
@@ -15,9 +15,19 @@ on:
         type: string
         default: '3.12'
 
+      custom-registry-url:
+        description: 'Custom registry URL (required when registry=custom)'
+        required: false
+        type: string
+
+      custom-registry-username:
+        description: 'Username for custom registry (required when registry=custom)'
+        required: false
+        type: string
+
     secrets:
       PUBLISH_TOKEN:
-        description: 'Authentication token (GITHUB_TOKEN or PYPI_TOKEN)'
+        description: 'Authentication token (PYPI_TOKEN or custom registry password)'
         required: false
 
 jobs:
@@ -26,20 +36,24 @@ jobs:
     runs-on: ubuntu-latest
     permissions:
       contents: read
-      packages: write  # Required for GitHub Packages
 
     steps:
       - name: Publish package
         uses: hope0hermes/SharedWorkflows/actions/python-publish@main
         with:
-          token: ${{ secrets.PUBLISH_TOKEN || secrets.GITHUB_TOKEN }}
+          token: ${{ secrets.PUBLISH_TOKEN }}
           registry: ${{ inputs.registry }}
-          repository-owner: ${{ github.repository_owner }}
           python-version: ${{ inputs.python-version }}
+          custom-registry-url: ${{ inputs.custom-registry-url }}
+          custom-registry-username: ${{ inputs.custom-registry-username }}
 
       - name: 📢 Published Successfully
         run: |
           echo "✅ Package published successfully!"
           echo ""
           echo "Registry: ${{ inputs.registry }}"
+          if [ "${{ inputs.registry }}" = "custom" ]; then
+            echo "Custom Registry URL: ${{ inputs.custom-registry-url }}"
+            echo "Username: ${{ inputs.custom-registry-username }}"
+          fi
           echo "Repository: ${{ github.repository }}"
