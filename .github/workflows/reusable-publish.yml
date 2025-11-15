@@ -9,6 +9,7 @@ on:
         type: string
         default: 'custom'
 
+<<<<<<< HEAD
       custom-registry-url:
         description: 'Custom registry URL (required when registry=custom)'
         required: false
@@ -19,6 +20,8 @@ on:
         required: false
         type: string
 
+=======
+>>>>>>> 0e2ba54 (refactor: move custom registry config to secrets in reusable-publish workflow)
       python-version:
         description: 'Python version to use for building'
         required: false
@@ -28,6 +31,14 @@ on:
     secrets:
       PUBLISH_TOKEN:
         description: 'Authentication token (PYPI_TOKEN or custom registry password)'
+        required: false
+
+      CUSTOM_REGISTRY_URL:
+        description: 'Custom registry URL (required when registry=custom)'
+        required: false
+
+      CUSTOM_REGISTRY_USERNAME:
+        description: 'Username for custom registry (required when registry=custom)'
         required: false
 
 jobs:
@@ -44,8 +55,8 @@ jobs:
           token: ${{ secrets.PUBLISH_TOKEN }}
           registry: ${{ inputs.registry }}
           python-version: ${{ inputs.python-version }}
-          custom-registry-url: ${{ inputs.custom-registry-url }}
-          custom-registry-username: ${{ inputs.custom-registry-username }}
+          custom-registry-url: ${{ secrets.CUSTOM_REGISTRY_URL }}
+          custom-registry-username: ${{ secrets.CUSTOM_REGISTRY_USERNAME }}
 
       - name: 📢 Published Successfully
         run: |
