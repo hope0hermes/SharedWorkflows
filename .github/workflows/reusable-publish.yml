@@ -9,16 +9,6 @@ on:
         type: string
         default: 'custom'
 
-      custom-registry-url:
-        description: 'Custom registry URL (required when registry=custom)'
-        required: false
-        type: string
-
-      custom-registry-username:
-        description: 'Username for custom registry (required when registry=custom)'
-        required: false
-        type: string
-
       python-version:
         description: 'Python version to use for building'
         required: false
@@ -28,6 +18,14 @@ on:
     secrets:
       PUBLISH_TOKEN:
         description: 'Authentication token (PYPI_TOKEN or custom registry password)'
+        required: false
+
+      CUSTOM_REGISTRY_URL:
+        description: 'Custom registry URL (required when registry=custom)'
+        required: false
+
+      CUSTOM_REGISTRY_USERNAME:
+        description: 'Username for custom registry (required when registry=custom)'
         required: false
 
 jobs:
@@ -44,8 +42,8 @@ jobs:
           token: ${{ secrets.PUBLISH_TOKEN }}
           registry: ${{ inputs.registry }}
           python-version: ${{ inputs.python-version }}
-          custom-registry-url: ${{ inputs.custom-registry-url }}
-          custom-registry-username: ${{ inputs.custom-registry-username }}
+          custom-registry-url: ${{ secrets.CUSTOM_REGISTRY_URL }}
+          custom-registry-username: ${{ secrets.CUSTOM_REGISTRY_USERNAME }}
 
       - name: 📢 Published Successfully
         run: |
@@ -53,7 +51,7 @@ jobs:
           echo ""
           echo "Registry: ${{ inputs.registry }}"
           if [ "${{ inputs.registry }}" = "custom" ]; then
-            echo "Custom Registry URL: ${{ inputs.custom-registry-url }}"
-            echo "Username: ${{ inputs.custom-registry-username }}"
+            echo "Custom Registry URL: (configured)"
+            echo "Username: (configured)"
           fi
           echo "Repository: ${{ github.repository }}"
