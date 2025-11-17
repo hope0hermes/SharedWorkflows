@@ -9,19 +9,6 @@ on:
         type: string
         default: 'custom'
 
-<<<<<<< HEAD
-      custom-registry-url:
-        description: 'Custom registry URL (required when registry=custom)'
-        required: false
-        type: string
-
-      custom-registry-username:
-        description: 'Username for custom registry (required when registry=custom)'
-        required: false
-        type: string
-
-=======
->>>>>>> 0e2ba54 (refactor: move custom registry config to secrets in reusable-publish workflow)
       python-version:
         description: 'Python version to use for building'
         required: false
@@ -64,7 +51,7 @@ jobs:
           echo ""
           echo "Registry: ${{ inputs.registry }}"
           if [ "${{ inputs.registry }}" = "custom" ]; then
-            echo "Custom Registry URL: ${{ inputs.custom-registry-url }}"
-            echo "Username: ${{ inputs.custom-registry-username }}"
+            echo "Custom Registry URL: (configured)"
+            echo "Username: (configured)"
           fi
           echo "Repository: ${{ github.repository }}"
